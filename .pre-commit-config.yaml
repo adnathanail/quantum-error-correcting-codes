@@ -8,6 +8,4 @@ repos:
     rev: v0.14.11
     hooks:
       - id: ruff
-        args: [
-          '--config', 'app/pyproject.toml'
-        ]
+        args: ['--config', 'pyproject.toml']

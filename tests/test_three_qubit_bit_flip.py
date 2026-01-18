@@ -1,8 +1,9 @@
 from qiskit import QuantumCircuit
 
 from qecc import get_three_qubit_bit_flip_encoding_decoding_circuit, get_three_qubit_bit_flip_syndrome_extraction_circuit
+
 from . import HadBasisState
-from .utils import QuantumCircuitTest, CompBasisState
+from .utils import CompBasisState, QuantumCircuitTest
 
 
 class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):

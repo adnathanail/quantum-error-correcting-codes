@@ -5,6 +5,16 @@ Install dependencies (including dev)
 uv sync
 ```
 
+## prek/pre-commit setup (recommended)
+
+[Install prek](https://prek.j178.dev/installation/)
+
+Set up pre-commit hook
+```shell
+prek install
+```
+
+## Manual commands
 Run tests
 ```shell
 uv run pytest
