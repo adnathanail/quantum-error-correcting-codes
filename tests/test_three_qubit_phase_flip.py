@@ -3,10 +3,10 @@ from qiskit import QuantumCircuit
 from qecc import get_three_qubit_phase_flip_encoding_circuit
 from qecc.three_qubit_phase_flip import get_three_qubit_phase_flip_decoding_circuit, get_three_qubit_phase_flip_syndrome_extraction_circuit
 
-from .utils import CompBasisState, HadBasisState, QuantumCircuitTest
+from .utils import CompBasisState, HadBasisState, ThreeQubitEncodingQuantumCircuitTest
 
 
-class TestThreeQubitPhaseFlipEncodingDecoding(QuantumCircuitTest):
+class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitEncodingQuantumCircuitTest):
     ALL_THREE_QUBIT_STATES: tuple[str, ...] = ("000", "001", "010", "011", "100", "101", "110", "111")
 
     @staticmethod
@@ -71,8 +71,18 @@ class TestThreeQubitPhaseFlipSyndromeExtraction(TestThreeQubitPhaseFlipEncodingD
             inplace=True,
         )
 
-    def test_encoding_0_syndrome_no_error(self):
-        qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5)
-        self.encode(qc)
-        self.syndrome_extraction(qc)
-        self.check_results_n_results_even_chance(qc, tuple("00" + state for state in self.ALL_THREE_QUBIT_STATES))
+    def test_encoding_0_and_1_syndrome(self):
+        """
+        |0> and |1> encode to |+++> and |---> which aren't distinguishable when measuring in the computational basis
+          and the phase introduced by the deliberate error, also isn't detectable, so the expected measurement outcome
+          is a superposition over all 3 qubit states, plus the correct syndrome
+        """
+        for initial_state in [CompBasisState.ZERO, CompBasisState.ONE]:
+            for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
+                qc, _, _ = self.get_initialized_qc(initial_state, num_qubits=5)
+                self.encode(qc)
+                # Deliberate error
+                if error_index is not None:
+                    qc.z(error_index)
+                self.syndrome_extraction(qc)
+                self.check_results_n_results_even_chance(qc, tuple(syndrome + state for state in self.ALL_THREE_QUBIT_STATES))
