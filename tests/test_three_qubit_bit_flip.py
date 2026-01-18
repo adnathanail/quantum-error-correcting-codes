@@ -1,5 +1,5 @@
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector, random_statevector
+from qiskit.quantum_info import Statevector
 
 from qecc import (
     apply_three_qubit_bit_flip_correction,
@@ -48,17 +48,6 @@ class ThreeQubitBitFlipTest(ThreeQubitEncodingQuantumCircuitTest):
         # Syndrome correction
         apply_three_qubit_bit_flip_correction(out, clreg)
         return out
-
-    @classmethod
-    def get_random_state_vector_and_measurement_results(cls) -> tuple[Statevector, int, int]:
-        # Generate random 1-qubit state vector
-        vec = random_statevector(2)
-        # Measure the state vector, so we know roughly what the measurement results look like
-        qc = QuantumCircuit(1)
-        qc.initialize(vec)
-        qc.measure_all()
-        results = cls.simulate_circuit(qc)
-        return vec, results["0"], results["1"]
 
 
 class TestThreeQubitBitFlipEncodingDecoding(ThreeQubitBitFlipTest):

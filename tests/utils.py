@@ -2,7 +2,7 @@ import math
 from math import sqrt
 
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, transpile
-from qiskit.quantum_info import Statevector
+from qiskit.quantum_info import Statevector, random_statevector
 from qiskit_aer import AerSimulator
 
 simulator = AerSimulator()
@@ -117,6 +117,17 @@ class QuantumCircuitTest:
         are approximately 50/50 between the two.
         """
         cls.check_results_two_results_ratio(qc, qreg_results, clreg_results, expected_ratio=(1, 1), hadamard_basis=hadamard_basis)
+
+    @classmethod
+    def get_random_state_vector_and_measurement_results(cls) -> tuple[Statevector, int, int]:
+        # Generate random 1-qubit state vector
+        vec = random_statevector(2)
+        # Measure the state vector, so we know roughly what the measurement results look like
+        qc = QuantumCircuit(1)
+        qc.initialize(vec)
+        qc.measure_all()
+        results = cls.simulate_circuit(qc)
+        return vec, results["0"], results["1"]
 
 
 class ThreeQubitEncodingQuantumCircuitTest(QuantumCircuitTest):
