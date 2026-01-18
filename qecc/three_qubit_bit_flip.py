@@ -1,4 +1,4 @@
-from qiskit import QuantumCircuit
+from qiskit import ClassicalRegister, QuantumCircuit
 
 
 def get_three_qubit_bit_flip_encoding_decoding_circuit() -> QuantumCircuit:
@@ -18,3 +18,13 @@ def get_three_qubit_bit_flip_syndrome_extraction_circuit() -> QuantumCircuit:
     out.cx(2, 3)
     out.cx(2, 4)
     return out
+
+
+def apply_three_qubit_syndrome_correction(qc: QuantumCircuit, clreg: ClassicalRegister) -> None:
+    qc.measure((3, 4), clreg)
+    with qc.if_test((clreg, 0b10)):
+        qc.x(0)
+    with qc.if_test((clreg, 0b01)):
+        qc.x(1)
+    with qc.if_test((clreg, 0b11)):
+        qc.x(2)
