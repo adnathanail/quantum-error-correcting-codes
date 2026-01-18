@@ -1,4 +1,4 @@
-from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
+from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
 from qecc import get_nine_qubit_shors_code_encoding_circuit
@@ -100,11 +100,7 @@ class NineQubitShorsCodeTest(NineQubitEncodingQuantumCircuitTest):
     @classmethod
     def get_complete_error_correction_circuit(cls, state_to_initialize: Statevector, bit_flip_error_index: int | None, phase_flip_error_index: int | None) -> QuantumCircuit:
         # Initialise
-        # out = cls.get_initialized_qc(state_to_initialize, num_qubits=9 + 6 + 2, num_clbits=6 + 2)
-        # TODO
-        out = QuantumCircuit(QuantumRegister(9 + 6 + 2), ClassicalRegister(6), ClassicalRegister(2))
-        out.initialize(state_to_initialize, [0])
-        # TODO
+        out = cls.get_initialized_qc(state_to_initialize, num_qubits=9 + 6 + 2, clreg_sizes=(6, 2))
         # Encode
         cls.encode(out)
         # Deliberate error
