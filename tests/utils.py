@@ -5,8 +5,9 @@ from qiskit_aer import AerSimulator
 simulator = AerSimulator()
 
 
-ZERO_STATE = Statevector([1, 0])
-ONE_STATE = Statevector([0, 1])
+class CompBasisState:
+    ZERO = Statevector([1, 0])
+    ONE = Statevector([0, 1])
 
 
 class QuantumCircuitTest:
