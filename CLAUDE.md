@@ -9,7 +9,7 @@ Implementing quantum error-correcting codes in Qiskit. The `qecc` package is str
 **Do not run commands - ask me to run them for you**
 
 - `uv run pytest` - run tests
-- `uv run scripts/generate_circuits.py` - generate circuit diagrams to `imgs/`
+- `uv run scripts/gen_imgs.py` - generate circuit diagrams to `imgs/`
 - `uv run ruff check` - lint
 - `uv run ruff format` - format
 
@@ -29,18 +29,22 @@ Each error-correcting code has:
 |------|------------------|----------|-----------------|
 | 3-qubit bit flip | X errors | \|0⟩→\|000⟩, \|1⟩→\|111⟩ | X |
 | 3-qubit phase flip | Z errors | \|0⟩→\|+++⟩, \|1⟩→\|---⟩ | Z |
+| 9-qubit Shor's code | X and Z errors | \|0⟩→(∣000⟩+∣111⟩)⊗3, \|1⟩→(∣000⟩-∣111⟩)⊗3 | X and Z |
 
-Key difference: bit flip encoding/decoding uses the same circuit (CNOTs are self-inverse), while phase flip needs separate encode/decode circuits (involves Hadamards).
+**Implementation notes:**
+- Bit flip encoding/decoding uses the same circuit (CNOTs are self-inverse)
+- Phase flip needs separate encode/decode circuits (involves Hadamards)
+- Shor's code combines both: applies phase flip encoding to create 3 blocks, then bit flip encoding within each block. Has separate syndrome extraction and correction for bit flips (6 ancilla qubits) and phase flips (2 ancilla qubits).
 
 ### Tests (`tests/`)
 
 `tests/utils.py` contains:
 - `QuantumCircuitTest` - base class with measurement helpers
-- `ThreeQubitEncodingQuantumCircuitTest` - adds syndrome constants
+- `ThreeQubitEncodingQuantumCircuitTest` - adds syndrome constants for 3-qubit codes
+- `NineQubitEncodingQuantumCircuitTest` - base class for 9-qubit Shor's code tests
 - `_check_results_ratio()` - generic measurement verification with statistical tolerance
-- `hadamard_basis` parameter - applies H gates before measurement (useful for phase flip code verification)
-
-Test classes use a non-`Test` prefixed base class to avoid pytest running inherited tests multiple times.
+- `get_random_state_vector_and_exact_probabilities()` - generates random states with exact probabilities for ratio testing
+- `hadamard_qubits` parameter - applies H gates before measurement (useful for phase flip code verification)
 
 ## Qiskit Notes
 
