@@ -7,7 +7,7 @@ from qecc.three_qubit_phase_flip import apply_three_qubit_phase_flip_correction,
 from .utils import CompBasisState, HadBasisState, ThreeQubitEncodingQuantumCircuitTest
 
 
-class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitEncodingQuantumCircuitTest):
+class ThreeQubitPhaseFlipTest(ThreeQubitEncodingQuantumCircuitTest):
     ALL_THREE_QUBIT_STATES: tuple[str, ...] = ("000", "001", "010", "011", "100", "101", "110", "111")
 
     @staticmethod
@@ -24,6 +24,44 @@ class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitEncodingQuantumCircuitTe
         """
         qc.compose(get_three_qubit_phase_flip_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
 
+    @staticmethod
+    def syndrome_extraction(qc: QuantumCircuit) -> None:
+        """
+        Given a 5-qubit quantum circuit, apply the 3 qubit phase flip syndrome extraction circuit
+        """
+        qc.compose(
+            get_three_qubit_phase_flip_syndrome_extraction_circuit(),
+            qubits=(0, 1, 2, 3, 4),
+            inplace=True,
+        )
+
+    @classmethod
+    def do_syndrome_testing(cls, initial_state: Statevector, error_index: int, measurement_results: tuple[str, ...], hadamard_basis: bool = False) -> None:
+        qc, _, _ = cls.get_initialized_qc(initial_state, num_qubits=5)
+        cls.encode(qc)
+        # Deliberate error
+        if error_index is not None:
+            qc.z(error_index)
+        cls.syndrome_extraction(qc)
+        cls.check_results_n_results_even_chance(qc, measurement_results, hadamard_basis=hadamard_basis)
+
+    @classmethod
+    def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
+        # Initialise
+        out, _, clreg = cls.get_initialized_qc(state_to_initialize, num_qubits=5, num_clbits=2)
+        # Encode
+        cls.encode(out)
+        # Deliberate error
+        if error_index is not None:
+            out.z(error_index)
+        # Syndrome extraction
+        cls.syndrome_extraction(out)
+        # Syndrome correction
+        apply_three_qubit_phase_flip_correction(out, clreg)
+        return out
+
+
+class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitPhaseFlipTest):
     def test_encoding_0(self):
         # Computational basis
         qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO)
@@ -75,28 +113,7 @@ class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitEncodingQuantumCircuitTe
         self.check_results_two_results_50_50(qc, ("000", "001"))
 
 
-class TestThreeQubitPhaseFlipSyndromeExtraction(TestThreeQubitPhaseFlipEncodingDecoding):
-    @staticmethod
-    def syndrome_extraction(qc: QuantumCircuit) -> None:
-        """
-        Given a 5-qubit quantum circuit, apply the 3 qubit phase flip syndrome extraction circuit
-        """
-        qc.compose(
-            get_three_qubit_phase_flip_syndrome_extraction_circuit(),
-            qubits=(0, 1, 2, 3, 4),
-            inplace=True,
-        )
-
-    @classmethod
-    def do_syndrome_testing(cls, initial_state: Statevector, error_index: int, measurement_results: tuple[str, ...], hadamard_basis: bool = False) -> None:
-        qc, _, _ = cls.get_initialized_qc(initial_state, num_qubits=5)
-        cls.encode(qc)
-        # Deliberate error
-        if error_index is not None:
-            qc.z(error_index)
-        cls.syndrome_extraction(qc)
-        cls.check_results_n_results_even_chance(qc, measurement_results, hadamard_basis=hadamard_basis)
-
+class TestThreeQubitPhaseFlipSyndromeExtraction(ThreeQubitPhaseFlipTest):
     def test_encoding_0_and_1_syndrome_computational(self):
         """
         |0> and |1> encode to |+++> and |---> which aren't distinguishable when measuring in the computational basis
@@ -116,26 +133,11 @@ class TestThreeQubitPhaseFlipSyndromeExtraction(TestThreeQubitPhaseFlipEncodingD
             self.do_syndrome_testing(CompBasisState.ONE, error_index, (measurement_outcome,), hadamard_basis=True)
 
 
-class TestThreeQubitPhaseFlipErrorCorrection(TestThreeQubitPhaseFlipSyndromeExtraction):
+class TestThreeQubitPhaseFlipErrorCorrection(ThreeQubitPhaseFlipTest):
     """
     Tests applying each possible X error, and making sure the correction works properly,
       on |0>, |1>, and |+> states
     """
-
-    @classmethod
-    def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
-        # Initialise
-        out, _, clreg = cls.get_initialized_qc(state_to_initialize, num_qubits=5, num_clbits=2)
-        # Encode
-        cls.encode(out)
-        # Deliberate error
-        if error_index is not None:
-            out.z(error_index)
-        # Syndrome extraction
-        cls.syndrome_extraction(out)
-        # Syndrome correction
-        apply_three_qubit_phase_flip_correction(out, clreg)
-        return out
 
     def test_correcting_0_deliberate_error(self):
         for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
