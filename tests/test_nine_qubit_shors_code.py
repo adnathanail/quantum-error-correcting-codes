@@ -52,7 +52,7 @@ class NineQubitShorsCodeTest(NineQubitEncodingQuantumCircuitTest):
     @classmethod
     def get_bit_flip_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
         # Initialise
-        out = cls.get_initialized_qc(state_to_initialize, num_qubits=9 + 6, num_clbits=6)
+        out = cls.get_initialized_qc(state_to_initialize, num_qubits=9 + 6, clreg_sizes=(6,))
         # Encode
         cls.encode(out)
         # Deliberate error
@@ -76,7 +76,7 @@ class NineQubitShorsCodeTest(NineQubitEncodingQuantumCircuitTest):
     @classmethod
     def get_phase_flip_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
         # Initialise
-        out = cls.get_initialized_qc(state_to_initialize, num_qubits=9 + 2, num_clbits=2)
+        out = cls.get_initialized_qc(state_to_initialize, num_qubits=9 + 2, clreg_sizes=(2,))
         # Encode
         cls.encode(out)
         # Deliberate error

@@ -48,7 +48,7 @@ class ThreeQubitPhaseFlipTest(ThreeQubitEncodingQuantumCircuitTest):
     @classmethod
     def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
         # Initialise
-        out = cls.get_initialized_qc(state_to_initialize, num_qubits=5, num_clbits=2)
+        out = cls.get_initialized_qc(state_to_initialize, num_qubits=5, clreg_sizes=(2,))
         # Encode
         cls.encode(out)
         # Deliberate error
