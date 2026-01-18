@@ -14,7 +14,7 @@ uv sync
 ## Generate images of circuits
 
 ```shell
-uv run scripts/generate_circuits.py
+uv run scripts/gen_imgs.py
 ```
 
 ## prek/pre-commit setup (recommended)
