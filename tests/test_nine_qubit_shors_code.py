@@ -2,7 +2,12 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
 from qecc import get_nine_qubit_shors_code_encoding_circuit
-from qecc.nine_qubit_shors_code import apply_nine_qubit_shors_code_bit_flip_correction, get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit, get_nine_qubit_shors_code_decoding_circuit
+from qecc.nine_qubit_shors_code import (
+    apply_nine_qubit_shors_code_bit_flip_correction,
+    get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit,
+    get_nine_qubit_shors_code_decoding_circuit,
+    get_nine_qubit_shors_code_phase_flip_syndrome_extraction_circuit,
+)
 
 from . import HadBasisState
 from .utils import CompBasisState, NineQubitEncodingQuantumCircuitTest, combs_of_strings
@@ -58,6 +63,14 @@ class NineQubitShorsCodeTest(NineQubitEncodingQuantumCircuitTest):
         cls.decode(out)
         return out
 
+    @staticmethod
+    def phase_flip_syndrome_extraction(qc: QuantumCircuit) -> None:
+        qc.compose(
+            get_nine_qubit_shors_code_phase_flip_syndrome_extraction_circuit(),
+            qubits=qc.qubits,
+            inplace=True,
+        )
+
 
 class TestNineQubitShorsCodeEncodingDecoding(NineQubitShorsCodeTest):
     def test_encoding_0(self):
@@ -103,19 +116,19 @@ class TestNineQubitShorsCodeEncodingDecoding(NineQubitShorsCodeTest):
 class TestNineQubitShorsCodeBitFlipSyndromeExtraction(NineQubitShorsCodeTest):
     def test_encoding_0_syndrome_deliberate_error(self):
         decoded_errored_strings = ("110", "010", "100")  # X on 1st, 2nd, 3rd qubit of block
-        for i in range(9):
+        for error_index in range(9):
             qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=9 + 6)
             self.encode(qc)
             # Deliberate error
-            qc.x(i)
+            qc.x(error_index)
             self.bit_flip_syndrome_extraction(qc)
             self.decode(qc)
             # Work out the correct measurement result:
             #  - The syndrome measurement is 01, 10, 11 depending i % 3, with 00's on either side depending on i // 3
             #  - The logical qubit measurement has similar 000 padding, and the block with the error's decoded value
             #    was worked out by hand
-            syndrome_measurement = (2 - (i // 3)) * "00" + f"{(i % 3) + 1:02b}" + (i // 3) * "00"
-            logical_qubit_measurement = (2 - (i // 3)) * "000" + decoded_errored_strings[i % 3] + (i // 3) * "000"
+            syndrome_measurement = (2 - (error_index // 3)) * "00" + f"{(error_index % 3) + 1:02b}" + (error_index // 3) * "00"
+            logical_qubit_measurement = (2 - (error_index // 3)) * "000" + decoded_errored_strings[error_index % 3] + (error_index // 3) * "000"
             self.check_results_one_result(qc, syndrome_measurement + logical_qubit_measurement)
 
 
@@ -134,3 +147,20 @@ class TestNineQubitShorsCodeBitFlipErrorCorrection(NineQubitShorsCodeTest):
         for error_index, syndrome in enumerate(["000001", "000010", "000011", "000100", "001000", "001100", "010000", "100000", "110000"]):
             qc = self.get_bit_flip_error_correction_circuit(CompBasisState.ONE, error_index)
             self.check_results_one_result(qc, syndrome + "000000001", syndrome)
+
+
+class TestNineQubitShorsCodePhaseFlipSyndromeExtraction(NineQubitShorsCodeTest):
+    def test_encoding_0_syndrome_deliberate_error(self):
+        logical_qubit_measurements_by_block = ("001001001", "000001000", "001000000")
+        for error_index in range(9):
+            qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=9 + 2)
+            self.encode(qc)
+            # Deliberate error
+            qc.z(error_index)
+            self.phase_flip_syndrome_extraction(qc)
+            self.decode(qc)
+            # # Work out the correct measurement result:
+            # #  - The syndrome measurement is 01 for Z in the first block, 10 2nd, 11 3rd
+            # #  - The logical qubit measurement is always 001001001
+            syndrome_measurement = f"{(error_index // 3) + 1:02b}"
+            self.check_results_one_result(qc, syndrome_measurement + logical_qubit_measurements_by_block[error_index // 3])
