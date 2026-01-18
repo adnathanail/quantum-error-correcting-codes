@@ -34,7 +34,12 @@ select = [
     "PGH",  # pygrep-hooks
     "PYI",  # flake8-pyi
     "RUF",  # ruff-specific rules
-    "ANN"
+    "ANN",
+    "W",
+    "N",
+    "S",
+    "ARG",
+    "PTH",
 ]
 
 ignore = [
