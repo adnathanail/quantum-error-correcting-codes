@@ -87,7 +87,7 @@ class TestThreeQubitPhaseFlipSyndromeExtraction(TestThreeQubitPhaseFlipEncodingD
             inplace=True,
         )
 
-    def test_encoding_0_and_1_syndrome(self):
+    def test_encoding_0_and_1_syndrome_computational(self):
         """
         |0> and |1> encode to |+++> and |---> which aren't distinguishable when measuring in the computational basis
           and the phase introduced by the deliberate error, also isn't detectable, so the expected measurement outcome
@@ -102,6 +102,26 @@ class TestThreeQubitPhaseFlipSyndromeExtraction(TestThreeQubitPhaseFlipEncodingD
                     qc.z(error_index)
                 self.syndrome_extraction(qc)
                 self.check_results_n_results_even_chance(qc, tuple(syndrome + state for state in self.ALL_THREE_QUBIT_STATES))
+
+    def test_encoding_0_syndrome_hadamard(self):
+        for error_index, measurement_outcome in ((None, "00000"), (0, "01001"), (1, "10010"), (2, "11100")):
+            qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5)
+            self.encode(qc)
+            # Deliberate error
+            if error_index is not None:
+                qc.z(error_index)
+            self.syndrome_extraction(qc)
+            self.check_results_one_result(qc, measurement_outcome, hadamard_basis=True)
+
+    def test_encoding_1_syndrome_hadamard(self):
+        for error_index, measurement_outcome in ((None, "00111"), (0, "01110"), (1, "10101"), (2, "11011")):
+            qc, _, _ = self.get_initialized_qc(CompBasisState.ONE, num_qubits=5)
+            self.encode(qc)
+            # Deliberate error
+            if error_index is not None:
+                qc.z(error_index)
+            self.syndrome_extraction(qc)
+            self.check_results_one_result(qc, measurement_outcome, hadamard_basis=True)
 
 
 class TestThreeQubitPhaseFlipErrorCorrection(TestThreeQubitPhaseFlipSyndromeExtraction):
