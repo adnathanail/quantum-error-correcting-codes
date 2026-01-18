@@ -18,7 +18,7 @@ class NineQubitShorsCodeTest(NineQubitEncodingQuantumCircuitTest):
         """
         qc.compose(
             get_nine_qubit_shors_code_encoding_circuit(),
-            qubits=(0, 1, 2, 3, 4, 5, 6, 7, 8),
+            qubits=qc.qubits[:9],
             inplace=True,
         )
 
@@ -29,15 +29,15 @@ class NineQubitShorsCodeTest(NineQubitEncodingQuantumCircuitTest):
         """
         qc.compose(
             get_nine_qubit_shors_code_decoding_circuit(),
-            qubits=(0, 1, 2, 3, 4, 5, 6, 7, 8),
+            qubits=qc.qubits[:9],
             inplace=True,
         )
 
     @staticmethod
-    def syndrome_extraction(qc: QuantumCircuit) -> None:
+    def bit_flip_syndrome_extraction(qc: QuantumCircuit) -> None:
         qc.compose(
             get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit(),
-            qubits=(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14),
+            qubits=qc.qubits[:15],
             inplace=True,
         )
 
@@ -91,7 +91,7 @@ class TestNineQubitShorsCodeBitFlipSyndromeExtraction(NineQubitShorsCodeTest):
             self.encode(qc)
             # Deliberate error
             qc.x(i)
-            self.syndrome_extraction(qc)
+            self.bit_flip_syndrome_extraction(qc)
             self.decode(qc)
             # Work out the correct measurement result:
             #  - The syndrome measurement is 01, 10, 11 depending i % 3, with 00's on either side depending on i // 3
