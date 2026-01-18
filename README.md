@@ -11,6 +11,12 @@ Install dependencies (including dev)
 uv sync
 ```
 
+## Generate images of circuits
+
+```shell
+uv run scripts/generate_circuits.py
+```
+
 ## prek/pre-commit setup (recommended)
 
 [Install prek](https://prek.j178.dev/installation/)
