@@ -39,9 +39,7 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         Given a quantum circuit and a single correct result, measure the circuit, and check the results of the measurement match the inputted correct result
         """
         qc.measure_all()
-        # Reverse the order of correct results, because Qiskit works backwards
-        #   add a space, because adding an empty classical register adds a space to the output
-        correct_result_little_endian = qreg_result[::-1] + " " + clreg_result[::-1]
+        correct_result_little_endian = qreg_result + " " + clreg_result
         assert cls.simulate_circuit(qc) == {correct_result_little_endian: 1024}
 
     @classmethod
@@ -53,7 +51,7 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         measurements = cls.simulate_circuit(qc)
         # Reverse the order of correct results, because Qiskit works backwards
         #   add a space, because adding an empty classical register adds a space to the output
-        correct_results_little_endian = [res[::-1] + " " for res in correct_results]
+        correct_results_little_endian = [res + " " for res in correct_results]
         # Test we have roughly 50/50 (+- 20%) of each correct result
         assert set(measurements.keys()) == set(correct_results_little_endian)
         assert 0.8 <= measurements[correct_results_little_endian[0]] / measurements[correct_results_little_endian[1]] <= 1.2
@@ -72,7 +70,7 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         qc, _, _ = self.get_initialized_qc(CompBasisState.ONE)
         self.encode_or_decode(qc)
         self.encode_or_decode(qc)
-        self.check_results_one_result(qc, "100")
+        self.check_results_one_result(qc, "001")
 
     def test_encoding_plus(self):
         qc, _, _ = self.get_initialized_qc(HadBasisState.PLUS)
@@ -83,7 +81,7 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         qc, _, _ = self.get_initialized_qc(HadBasisState.PLUS)
         self.encode_or_decode(qc)
         self.encode_or_decode(qc)
-        self.check_results_two_results_50_50(qc, ["000", "100"])
+        self.check_results_two_results_50_50(qc, ["000", "001"])
 
 
 class TestThreeQubitBitFlipSyndromeExtraction(TestThreeQubitBitFlipEncodingDecoding):
@@ -105,7 +103,7 @@ class TestThreeQubitBitFlipSyndromeExtraction(TestThreeQubitBitFlipEncodingDecod
         self.check_results_one_result(qc, "00000")
 
     def test_encoding_0_syndrome_deliberate_error(self):
-        for error_index, measurement_outcome in [(0, "10001"), (1, "01010"), (2, "00111")]:
+        for error_index, measurement_outcome in [(0, "01001"), (1, "10010"), (2, "11100")]:
             qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5)
             self.encode_or_decode(qc)
             # Deliberate error
@@ -117,10 +115,10 @@ class TestThreeQubitBitFlipSyndromeExtraction(TestThreeQubitBitFlipEncodingDecod
         qc, _, _ = self.get_initialized_qc(CompBasisState.ONE, num_qubits=5)
         self.encode_or_decode(qc)
         self.syndrome_extraction(qc)
-        self.check_results_one_result(qc, "11100")
+        self.check_results_one_result(qc, "00111")
 
     def test_encoding_1_syndrome_deliberate_error(self):
-        for error_index, measurement_outcome in [(0, "01101"), (1, "10110"), (2, "11011")]:
+        for error_index, measurement_outcome in [(0, "01110"), (1, "10101"), (2, "11011")]:
             qc, _, _ = self.get_initialized_qc(CompBasisState.ONE, num_qubits=5)
             self.encode_or_decode(qc)
             # Deliberate error
@@ -137,4 +135,4 @@ class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtracti
         qc.x(0)
         self.syndrome_extraction(qc)
         apply_three_qubit_syndrome_correction(qc, clreg)
-        self.check_results_one_result(qc, "00001", "01")
+        self.check_results_one_result(qc, "01000", "01")
