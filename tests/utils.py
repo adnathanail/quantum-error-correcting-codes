@@ -13,7 +13,7 @@ class CompBasisState:
 
 
 class HadBasisState:
-    PLUS = Statevector([1/sqrt(2), 1/sqrt(2)])
+    PLUS = Statevector([1 / sqrt(2), 1 / sqrt(2)])
     # ONE = Statevector([0, 1])
 
 

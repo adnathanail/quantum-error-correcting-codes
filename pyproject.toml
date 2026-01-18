@@ -12,5 +12,9 @@ dependencies = [
 dev = [
     "pytest>=9.0.2",
     "qiskit-aer>=0.17.2",
+    "ruff>=0.14.13",
     "ty>=0.0.12",
 ]
+
+[tool.ruff]
+line-length = 200
