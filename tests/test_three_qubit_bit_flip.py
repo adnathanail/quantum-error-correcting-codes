@@ -1,5 +1,5 @@
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
-from qiskit.quantum_info import Statevector
+from qiskit.quantum_info import Statevector, random_statevector
 
 from qecc import (
     apply_three_qubit_syndrome_correction,
@@ -155,3 +155,15 @@ class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtracti
         for error_index, syndrome_measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
             qc = self.get_error_correction_circuit(HadBasisState.PLUS, error_index)
             self.check_results_two_results_50_50(qc, (syndrome_measurement_outcome + "000", syndrome_measurement_outcome + "111"), (syndrome_measurement_outcome, syndrome_measurement_outcome))
+
+    def test_random_state_vector_correction(self):
+        vec = random_statevector(2)
+        qc = QuantumCircuit(1)
+        qc.initialize(vec)
+        qc.measure_all()
+        print(self.simulate_circuit(qc))
+        qc = self.get_error_correction_circuit(vec, 0)
+        self.encode_or_decode(qc)
+        qc.measure_all()
+        print(self.simulate_circuit(qc))
+        assert False
