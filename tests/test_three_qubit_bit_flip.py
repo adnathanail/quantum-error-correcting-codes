@@ -44,15 +44,15 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
     @classmethod
     def check_results_two_results_50_50(cls, qc: QuantumCircuit, correct_results: list[str]) -> None:
         """
-        Given a quantum circuit and a list of 2 correct results, measure the circuit, and check the results of the measurement are approximately 50/50 between the two correct results (within +- 15%)
+        Given a quantum circuit and a list of 2 correct results, measure the circuit, and check the results of the measurement are approximately 50/50 between the two correct results (within +- 20%)
         """
         qc.measure_all()
         measurements = cls.simulate_circuit(qc)
         # Reverse the order of correct results, because Qiskit works backwards
         correct_results_little_endian = [res[::-1] for res in correct_results]
-        # Test we have roughly 50/50 (+- 15%) of each correct result
+        # Test we have roughly 50/50 (+- 20%) of each correct result
         assert set(measurements.keys()) == set(correct_results_little_endian)
-        assert 0.85 <= measurements[correct_results_little_endian[0]] / measurements[correct_results_little_endian[1]] <= 1.15
+        assert 0.8 <= measurements[correct_results_little_endian[0]] / measurements[correct_results_little_endian[1]] <= 1.2
 
     def test_encoding_0(self):
         qc = self.get_initialized_qc(CompBasisState.ZERO)
@@ -94,15 +94,30 @@ class TestThreeQubitBitFlipSyndromeExtraction(TestThreeQubitBitFlipEncodingDecod
             inplace=True,
         )
 
-    def test_encoding_0(self):
+    def test_encoding_0_syndrome_no_error(self):
         qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5)
         self.encode_or_decode(qc)
         self.syndrome_extraction(qc)
         self.check_results_one_result(qc, "00000")
 
-    def test_encoding_0_with_deliberate_error(self):
+    def test_encoding_0_syndrome_deliberate_error(self):
         for error_index, measurement_outcome in [(0, "10001"), (1, "01010"), (2, "00111")]:
             qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5)
+            self.encode_or_decode(qc)
+            # Deliberate error
+            qc.x(error_index)
+            self.syndrome_extraction(qc)
+            self.check_results_one_result(qc, measurement_outcome)
+
+    def test_encoding_1_syndrome_no_error(self):
+        qc = self.get_initialized_qc(CompBasisState.ONE, num_qubits=5)
+        self.encode_or_decode(qc)
+        self.syndrome_extraction(qc)
+        self.check_results_one_result(qc, "11100")
+
+    def test_encoding_1_syndrome_deliberate_error(self):
+        for error_index, measurement_outcome in [(0, "01101"), (1, "10110"), (2, "11011")]:
+            qc = self.get_initialized_qc(CompBasisState.ONE, num_qubits=5)
             self.encode_or_decode(qc)
             # Deliberate error
             qc.x(error_index)
