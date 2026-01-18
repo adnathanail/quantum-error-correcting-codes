@@ -65,3 +65,14 @@ def get_nine_qubit_shors_code_phase_flip_syndrome_extraction_circuit() -> Quantu
     out.h(phase_flip_syndrome[0])
     out.h(phase_flip_syndrome[1])
     return out
+
+
+def apply_nine_qubit_shors_code_phase_flip_correction(qc: QuantumCircuit) -> None:
+    clreg = qc.cregs[-1]
+    qc.measure(qc.qubits[-2:], clreg)
+    with qc.if_test((clreg, 0b01)):
+        qc.z(0)
+    with qc.if_test((clreg, 0b10)):
+        qc.z(3)
+    with qc.if_test((clreg, 0b11)):
+        qc.z(6)
