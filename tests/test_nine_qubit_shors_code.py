@@ -234,13 +234,20 @@ class TestNineQubitShorsCodePhaseFlipErrorCorrection(NineQubitShorsCodeTest):
 
 class TestNineQubitShorsCodeCompleteErrorCorrection(NineQubitShorsCodeTest):
     """
-    Tests applying each possible Z error, and making sure the correction works properly,
+    Tests applying each possible X and Z error, and making sure the correction works properly,
       on |0>, and |1> states
     """
 
-    def test_correcting_0_deliberate_error(self):
-        for bit_flip_error_index, bit_flip_syndrome in enumerate(self.BIT_FLIP_SYNDROMES):
-            for phase_flip_error_index_multiplier, phase_flip_syndrome in enumerate(self.PHASE_FLIP_SYNDROMES):
+    @classmethod
+    def do_error_correction_testing(cls, initial_state: Statevector, measurement_outcome: str) -> None:
+        for bit_flip_error_index, bit_flip_syndrome in enumerate(cls.BIT_FLIP_SYNDROMES):
+            for phase_flip_error_index_multiplier, phase_flip_syndrome in enumerate(cls.PHASE_FLIP_SYNDROMES):
                 for phase_flip_error_index_offset in range(3):
-                    qc = self.get_complete_error_correction_circuit(CompBasisState.ZERO, bit_flip_error_index, phase_flip_error_index_multiplier * 3 + phase_flip_error_index_offset)
-                    self.check_results_one_result(qc, f"{phase_flip_syndrome}{bit_flip_syndrome}000000000", f"{phase_flip_syndrome} {bit_flip_syndrome}")
+                    qc = cls.get_complete_error_correction_circuit(initial_state, bit_flip_error_index, phase_flip_error_index_multiplier * 3 + phase_flip_error_index_offset)
+                    cls.check_results_one_result(qc, f"{phase_flip_syndrome}{bit_flip_syndrome}{measurement_outcome}", f"{phase_flip_syndrome} {bit_flip_syndrome}")
+
+    def test_correcting_0_deliberate_error(self):
+        self.do_error_correction_testing(CompBasisState.ZERO, "000000000")
+
+    def test_correcting_1_deliberate_error(self):
+        self.do_error_correction_testing(CompBasisState.ONE, "000000001")

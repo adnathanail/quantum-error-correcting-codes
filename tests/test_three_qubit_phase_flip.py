@@ -36,16 +36,6 @@ class ThreeQubitPhaseFlipTest(ThreeQubitEncodingQuantumCircuitTest):
         )
 
     @classmethod
-    def do_syndrome_testing(cls, initial_state: Statevector, error_index: int | None, measurement_results: tuple[str, ...], hadamard_qubits: int = 0) -> None:
-        qc = cls.get_initialized_qc(initial_state, num_qubits=5)
-        cls.encode(qc)
-        # Deliberate error
-        if error_index is not None:
-            qc.z(error_index)
-        cls.syndrome_extraction(qc)
-        cls.check_results_n_results_even_chance(qc, measurement_results, hadamard_qubits=hadamard_qubits)
-
-    @classmethod
     def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
         # Initialise
         out = cls.get_initialized_qc(state_to_initialize, num_qubits=5, clreg_sizes=(2,))
@@ -114,6 +104,16 @@ class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitPhaseFlipTest):
 
 
 class TestThreeQubitPhaseFlipSyndromeExtraction(ThreeQubitPhaseFlipTest):
+    @classmethod
+    def do_syndrome_testing(cls, initial_state: Statevector, error_index: int | None, measurement_results: tuple[str, ...], hadamard_qubits: int = 0) -> None:
+        qc = cls.get_initialized_qc(initial_state, num_qubits=5)
+        cls.encode(qc)
+        # Deliberate error
+        if error_index is not None:
+            qc.z(error_index)
+        cls.syndrome_extraction(qc)
+        cls.check_results_n_results_even_chance(qc, measurement_results, hadamard_qubits=hadamard_qubits)
+
     def test_encoding_0_and_1_syndrome_computational(self):
         """
         |0> and |1> encode to |+++> and |---> which aren't distinguishable when measuring in the computational basis
