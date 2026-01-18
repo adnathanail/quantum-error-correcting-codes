@@ -25,4 +25,4 @@ class TestNineQubitShorsCodeEncodingDecoding(NineQubitShorsCodeTest):
     def test_encoding_0(self):
         qc = self.get_initialized_qc(CompBasisState.ZERO)
         self.encode(qc)
-        self.check_results_n_results_even_chance(qc, self.ALL_VALID_SHORS_STRINGS)
+        self.check_results_n_results_even_chance(qc, self.ALL_VALID_SHORS_MEASUREMENTS)
