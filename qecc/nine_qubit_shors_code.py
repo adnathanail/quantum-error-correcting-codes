@@ -1,6 +1,7 @@
 from qiskit import QuantumCircuit
 
-from qecc import get_three_qubit_bit_flip_encoding_decoding_circuit, get_three_qubit_phase_flip_encoding_circuit
+from .three_qubit_bit_flip import get_three_qubit_bit_flip_encoding_decoding_circuit
+from .three_qubit_phase_flip import get_three_qubit_phase_flip_encoding_circuit
 
 
 def get_nine_qubit_shors_code_encoding_circuit() -> QuantumCircuit:
