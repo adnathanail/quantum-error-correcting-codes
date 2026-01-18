@@ -153,3 +153,19 @@ class TestThreeQubitPhaseFlipErrorCorrection(ThreeQubitPhaseFlipTest):
         for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
             qc = self.get_error_correction_circuit(HadBasisState.PLUS, error_index)
             self.check_results_two_results_50_50(qc, (syndrome + "000", syndrome + "111"), (syndrome, syndrome), hadamard_basis=True)
+
+
+class TestRandomThreeQubitPhaseFlipErrorCorrectionAndDecoding(ThreeQubitPhaseFlipTest):
+    def test_random_state_vector_correction(self):
+        """
+        For a random state vector, apply each possible Z error, and check the error is corrected, by checking
+          the measurement results ratio of 0:1 is roughly the same as just the state vector by itself
+        Repeated 4 times for safety
+        """
+        for _ in range(4):
+            vec, plus_tally, minus_tally = self.get_random_state_vector_and_measurement_results()
+            for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
+                qc = self.get_error_correction_circuit(vec, error_index)
+                self.decode(qc)
+
+                self.check_results_two_results_ratio(qc, (syndrome + "000", syndrome + "001"), (syndrome, syndrome), (plus_tally, minus_tally))
