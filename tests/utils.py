@@ -97,13 +97,21 @@ class QuantumCircuitTest:
 
     @classmethod
     def check_results_two_results_ratio(
-        cls, qc: QuantumCircuit, qreg_results: tuple[str, str], clreg_results: tuple[str, str], expected_ratio: tuple[int, int], *, num_std_devs: float = 4.0, hadamard_qubits: int = 0
+        cls,
+        qc: QuantumCircuit,
+        qreg_results: tuple[str, str],
+        clreg_results: tuple[str, str],
+        expected_ratio: tuple[int, int],
+        *,
+        num_std_devs: float = 4.0,
+        hadamard_qubits: int = 0,
+        num_shots: int = 1024,
     ) -> None:
         """
         Given a quantum circuit and two expected results, measure the circuit and check the results
         match the expected ratio within statistical tolerance.
         """
-        cls._check_results_ratio(qc, qreg_results, clreg_results, expected_ratio, num_std_devs=num_std_devs, hadamard_qubits=hadamard_qubits)
+        cls._check_results_ratio(qc, qreg_results, clreg_results, expected_ratio, num_std_devs=num_std_devs, hadamard_qubits=hadamard_qubits, num_shots=num_shots)
 
     @classmethod
     def check_results_n_results_even_chance(
@@ -126,16 +134,17 @@ class QuantumCircuitTest:
         """
         cls.check_results_two_results_ratio(qc, qreg_results, clreg_results, expected_ratio=(1, 1), hadamard_qubits=hadamard_qubits)
 
-    @classmethod
-    def get_random_state_vector_and_measurement_results(cls) -> tuple[Statevector, int, int]:
-        # Generate random 1-qubit state vector
+    @staticmethod
+    def get_random_state_vector_and_exact_probabilities() -> tuple[Statevector, int, int]:
+        """
+        Generate a random 1-qubit state vector and return exact probabilities as integers.
+        Returns (statevector, prob_zero_scaled, prob_one_scaled) where probabilities are
+        scaled to integers (multiplied by 10000) for use with ratio-based testing.
+        """
         vec = random_statevector(2)
-        # Measure the state vector, so we know roughly what the measurement results look like
-        qc = QuantumCircuit(1)
-        qc.initialize(vec)
-        qc.measure_all()
-        results = cls.simulate_circuit(qc)
-        return vec, results["0"], results["1"]
+        probs = vec.probabilities()
+        # Scale to integers for ratio testing (10000 gives good precision)
+        return vec, int(probs[0] * 10000), int(probs[1] * 10000)
 
 
 class ThreeQubitEncodingQuantumCircuitTest(QuantumCircuitTest):

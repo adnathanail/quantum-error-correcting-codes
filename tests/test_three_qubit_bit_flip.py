@@ -141,9 +141,9 @@ class TestRandomThreeQubitBitFlipErrorCorrectionAndDecoding(ThreeQubitBitFlipTes
         Repeated 4 times for safety
         """
         for _ in range(4):
-            vec, zero_tally, one_tally = self.get_random_state_vector_and_measurement_results()
+            vec, prob_zero, prob_one = self.get_random_state_vector_and_exact_probabilities()
             for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
                 qc = self.get_error_correction_circuit(vec, error_index)
                 self.encode_or_decode(qc)
 
-                self.check_results_two_results_ratio(qc, (syndrome + "000", syndrome + "001"), (syndrome, syndrome), (zero_tally, one_tally))
+                self.check_results_two_results_ratio(qc, (syndrome + "000", syndrome + "001"), (syndrome, syndrome), (prob_zero, prob_one))

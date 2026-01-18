@@ -151,13 +151,13 @@ class TestNineQubitShorsCodeEncodingDecoding(NineQubitShorsCodeTest):
 
     def test_encoding_decoding_random_state_vector(self):
         for _ in range(4):
-            vec, zero_tally, one_tally = self.get_random_state_vector_and_measurement_results()
+            vec, prob_zero, prob_one = self.get_random_state_vector_and_exact_probabilities()
 
             qc = self.get_initialized_qc(vec)
             self.encode(qc)
             self.decode(qc)
 
-            self.check_results_two_results_ratio(qc, ("000000000", "000000001"), ("", ""), (zero_tally, one_tally))
+            self.check_results_two_results_ratio(qc, ("000000000", "000000001"), ("", ""), (prob_zero, prob_one))
 
 
 class TestNineQubitShorsCodeBitFlipSyndromeExtraction(NineQubitShorsCodeTest):
