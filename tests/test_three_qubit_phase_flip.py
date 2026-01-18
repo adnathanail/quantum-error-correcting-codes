@@ -87,6 +87,16 @@ class TestThreeQubitPhaseFlipSyndromeExtraction(TestThreeQubitPhaseFlipEncodingD
             inplace=True,
         )
 
+    @classmethod
+    def do_syndrome_testing(cls, initial_state: Statevector, error_index: int, measurement_results: tuple[str, ...], hadamard_basis: bool = False) -> None:
+        qc, _, _ = cls.get_initialized_qc(initial_state, num_qubits=5)
+        cls.encode(qc)
+        # Deliberate error
+        if error_index is not None:
+            qc.z(error_index)
+        cls.syndrome_extraction(qc)
+        cls.check_results_n_results_even_chance(qc, measurement_results, hadamard_basis=hadamard_basis)
+
     def test_encoding_0_and_1_syndrome_computational(self):
         """
         |0> and |1> encode to |+++> and |---> which aren't distinguishable when measuring in the computational basis
@@ -95,33 +105,15 @@ class TestThreeQubitPhaseFlipSyndromeExtraction(TestThreeQubitPhaseFlipEncodingD
         """
         for initial_state in [CompBasisState.ZERO, CompBasisState.ONE]:
             for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
-                qc, _, _ = self.get_initialized_qc(initial_state, num_qubits=5)
-                self.encode(qc)
-                # Deliberate error
-                if error_index is not None:
-                    qc.z(error_index)
-                self.syndrome_extraction(qc)
-                self.check_results_n_results_even_chance(qc, tuple(syndrome + state for state in self.ALL_THREE_QUBIT_STATES))
+                self.do_syndrome_testing(initial_state, error_index, tuple(syndrome + state for state in self.ALL_THREE_QUBIT_STATES))
 
     def test_encoding_0_syndrome_hadamard(self):
         for error_index, measurement_outcome in ((None, "00000"), (0, "01001"), (1, "10010"), (2, "11100")):
-            qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5)
-            self.encode(qc)
-            # Deliberate error
-            if error_index is not None:
-                qc.z(error_index)
-            self.syndrome_extraction(qc)
-            self.check_results_one_result(qc, measurement_outcome, hadamard_basis=True)
+            self.do_syndrome_testing(CompBasisState.ZERO, error_index, (measurement_outcome,), hadamard_basis=True)
 
     def test_encoding_1_syndrome_hadamard(self):
         for error_index, measurement_outcome in ((None, "00111"), (0, "01110"), (1, "10101"), (2, "11011")):
-            qc, _, _ = self.get_initialized_qc(CompBasisState.ONE, num_qubits=5)
-            self.encode(qc)
-            # Deliberate error
-            if error_index is not None:
-                qc.z(error_index)
-            self.syndrome_extraction(qc)
-            self.check_results_one_result(qc, measurement_outcome, hadamard_basis=True)
+            self.do_syndrome_testing(CompBasisState.ONE, error_index, (measurement_outcome,), hadamard_basis=True)
 
 
 class TestThreeQubitPhaseFlipErrorCorrection(TestThreeQubitPhaseFlipSyndromeExtraction):
