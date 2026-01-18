@@ -1,0 +1,7 @@
+[project]
+name = "quantum-error-correcting-codes"
+version = "0.1.0"
+description = "Implementing various quantum error-correcting codes in Qiskit, just for fun really"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
