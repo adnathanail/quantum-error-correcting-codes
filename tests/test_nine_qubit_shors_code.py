@@ -1,4 +1,4 @@
-from qiskit import QuantumCircuit
+from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 from qiskit.quantum_info import Statevector
 
 from qecc import get_nine_qubit_shors_code_encoding_circuit
@@ -8,6 +8,7 @@ from qecc.nine_qubit_shors_code import (
     get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit,
     get_nine_qubit_shors_code_decoding_circuit,
     get_nine_qubit_shors_code_phase_flip_syndrome_extraction_circuit,
+    get_nine_qubit_shors_code_syndrome_extraction_circuit,
 )
 
 from . import HadBasisState
@@ -84,6 +85,37 @@ class NineQubitShorsCodeTest(NineQubitEncodingQuantumCircuitTest):
         # Syndrome extraction
         cls.phase_flip_syndrome_extraction(out)
         # Syndrome correction
+        apply_nine_qubit_shors_code_phase_flip_correction(out)
+        cls.decode(out)
+        return out
+
+    @staticmethod
+    def complete_syndrome_extraction(qc: QuantumCircuit) -> None:
+        qc.compose(
+            get_nine_qubit_shors_code_syndrome_extraction_circuit(),
+            qubits=qc.qubits,
+            inplace=True,
+        )
+
+    @classmethod
+    def get_complete_error_correction_circuit(cls, state_to_initialize: Statevector, bit_flip_error_index: int | None, phase_flip_error_index: int | None) -> QuantumCircuit:
+        # Initialise
+        # out = cls.get_initialized_qc(state_to_initialize, num_qubits=9 + 6 + 2, num_clbits=6 + 2)
+        # TODO
+        out = QuantumCircuit(QuantumRegister(9 + 6 + 2), ClassicalRegister(6), ClassicalRegister(2))
+        out.initialize(state_to_initialize, [0])
+        # TODO
+        # Encode
+        cls.encode(out)
+        # Deliberate error
+        if bit_flip_error_index is not None:
+            out.x(bit_flip_error_index)
+        if phase_flip_error_index is not None:
+            out.z(phase_flip_error_index)
+        # Syndrome extraction
+        cls.complete_syndrome_extraction(out)
+        # Syndrome correction
+        apply_nine_qubit_shors_code_bit_flip_correction(out)
         apply_nine_qubit_shors_code_phase_flip_correction(out)
         cls.decode(out)
         return out
@@ -200,3 +232,14 @@ class TestNineQubitShorsCodePhaseFlipErrorCorrection(NineQubitShorsCodeTest):
             for error_index_offset in range(3):
                 qc = self.get_phase_flip_error_correction_circuit(CompBasisState.ONE, error_index_multiplier * 3 + error_index_offset)
                 self.check_results_one_result(qc, syndrome + "000000001", syndrome)
+
+
+class TestNineQubitShorsCodeCompleteErrorCorrection(NineQubitShorsCodeTest):
+    """
+    Tests applying each possible Z error, and making sure the correction works properly,
+      on |0>, and |1> states
+    """
+
+    def test_correcting_0_deliberate_error(self):
+        qc = self.get_complete_error_correction_circuit(CompBasisState.ZERO, 0, 0)
+        self.check_results_one_result(qc, "01" + "000001" + "000000000", "01 000001")

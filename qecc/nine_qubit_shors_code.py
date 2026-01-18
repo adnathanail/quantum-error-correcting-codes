@@ -76,3 +76,11 @@ def apply_nine_qubit_shors_code_phase_flip_correction(qc: QuantumCircuit) -> Non
         qc.z(3)
     with qc.if_test((clreg, 0b11)):
         qc.z(6)
+
+
+def get_nine_qubit_shors_code_syndrome_extraction_circuit() -> QuantumCircuit:
+    logical_qubit, bit_flip_syndrome, phase_flip_syndrome = QuantumRegister(9), QuantumRegister(6), QuantumRegister(2)
+    out = QuantumCircuit(logical_qubit, bit_flip_syndrome, phase_flip_syndrome)
+    out.compose(get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit(), qubits=logical_qubit[:] + bit_flip_syndrome[:], inplace=True)
+    out.compose(get_nine_qubit_shors_code_phase_flip_syndrome_extraction_circuit(), qubits=logical_qubit[:] + phase_flip_syndrome[:], inplace=True)
+    return out
