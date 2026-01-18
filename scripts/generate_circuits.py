@@ -14,7 +14,7 @@ def draw_circuit(circuit: QuantumCircuit, file_path: Path) -> None:
 def three_qubit_bit_flip() -> None:
     out_dir = imgs_dir / "three_qubit_bit_flip"
     # Encoding
-    draw_circuit(get_three_qubit_bit_flip_encoding_decoding_circuit(), out_dir / "encoding.png")
+    draw_circuit(get_three_qubit_bit_flip_encoding_decoding_circuit(), out_dir / "encoding_decoding.png")
 
     # Syndrome extraction
     qc = QuantumCircuit(5)
