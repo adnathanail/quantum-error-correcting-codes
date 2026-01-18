@@ -20,15 +20,14 @@ class HadBasisState:
 
 class QuantumCircuitTest:
     @staticmethod
-    def get_initialized_qc(state_to_initialize: Statevector, *, num_qubits: int = 3, num_clbits: int = 0) -> tuple[QuantumCircuit, QuantumRegister, ClassicalRegister]:
+    def get_initialized_qc(state_to_initialize: Statevector, *, num_qubits: int = 3, num_clbits: int = 0) -> QuantumCircuit:
         """
         Given a (normalized) state vector, return a quantum circuit with the specified number of qubits, with the first
           qubit initialised to the input vector
         """
-        qureg, clreg = QuantumRegister(num_qubits), ClassicalRegister(num_clbits)
-        out = QuantumCircuit(qureg, clreg)
+        out = QuantumCircuit(QuantumRegister(num_qubits), ClassicalRegister(num_clbits))
         out.initialize(state_to_initialize, [0])
-        return out, qureg, clreg
+        return out
 
     @staticmethod
     def simulate_circuit(qc: QuantumCircuit) -> dict[str, int]:

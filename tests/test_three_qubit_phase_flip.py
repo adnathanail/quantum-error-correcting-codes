@@ -37,7 +37,7 @@ class ThreeQubitPhaseFlipTest(ThreeQubitEncodingQuantumCircuitTest):
 
     @classmethod
     def do_syndrome_testing(cls, initial_state: Statevector, error_index: int | None, measurement_results: tuple[str, ...], hadamard_basis: bool = False) -> None:
-        qc, _, _ = cls.get_initialized_qc(initial_state, num_qubits=5)
+        qc = cls.get_initialized_qc(initial_state, num_qubits=5)
         cls.encode(qc)
         # Deliberate error
         if error_index is not None:
@@ -48,7 +48,7 @@ class ThreeQubitPhaseFlipTest(ThreeQubitEncodingQuantumCircuitTest):
     @classmethod
     def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
         # Initialise
-        out, _, clreg = cls.get_initialized_qc(state_to_initialize, num_qubits=5, num_clbits=2)
+        out = cls.get_initialized_qc(state_to_initialize, num_qubits=5, num_clbits=2)
         # Encode
         cls.encode(out)
         # Deliberate error
@@ -57,57 +57,57 @@ class ThreeQubitPhaseFlipTest(ThreeQubitEncodingQuantumCircuitTest):
         # Syndrome extraction
         cls.syndrome_extraction(out)
         # Syndrome correction
-        apply_three_qubit_phase_flip_correction(out, clreg)
+        apply_three_qubit_phase_flip_correction(out)
         return out
 
 
 class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitPhaseFlipTest):
     def test_encoding_0(self):
         # Computational basis
-        qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO)
+        qc = self.get_initialized_qc(CompBasisState.ZERO)
         self.encode(qc)
         self.check_results_n_results_even_chance(qc, self.ALL_THREE_QUBIT_STATES)
         # Hadamard basis
-        qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO)
+        qc = self.get_initialized_qc(CompBasisState.ZERO)
         self.encode(qc)
         self.check_results_one_result(qc, "000", hadamard_basis=True)
 
     def test_encoding_1(self):
         # Computational basis
-        qc, _, _ = self.get_initialized_qc(CompBasisState.ONE)
+        qc = self.get_initialized_qc(CompBasisState.ONE)
         self.encode(qc)
         # Same as for 0, because the phase on |111> vs -|111> isn't detectable by measurement
         self.check_results_n_results_even_chance(qc, self.ALL_THREE_QUBIT_STATES)
         # Hadamard basis
-        qc, _, _ = self.get_initialized_qc(CompBasisState.ONE)
+        qc = self.get_initialized_qc(CompBasisState.ONE)
         self.encode(qc)
         self.check_results_one_result(qc, "111", hadamard_basis=True)
 
     def test_encoding_plus(self):
         # Computational basis
-        qc, _, _ = self.get_initialized_qc(HadBasisState.PLUS)
+        qc = self.get_initialized_qc(HadBasisState.PLUS)
         self.encode(qc)
         # The phase-flip encoding |+00> causes destructive interference, leaving only even parity states
         self.check_results_n_results_even_chance(qc, ("000", "011", "101", "110"))
         # Hadamard basis
-        qc, _, _ = self.get_initialized_qc(HadBasisState.PLUS)
+        qc = self.get_initialized_qc(HadBasisState.PLUS)
         self.encode(qc)
         self.check_results_two_results_50_50(qc, ("000", "111"), hadamard_basis=True)
 
     def test_encoding_decoding_0(self):
-        qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO)
+        qc = self.get_initialized_qc(CompBasisState.ZERO)
         self.encode(qc)
         self.decode(qc)
         self.check_results_one_result(qc, "000")
 
     def test_encoding_decoding_1(self):
-        qc, _, _ = self.get_initialized_qc(CompBasisState.ONE)
+        qc = self.get_initialized_qc(CompBasisState.ONE)
         self.encode(qc)
         self.decode(qc)
         self.check_results_one_result(qc, "001")
 
     def test_encoding_decoding_plus(self):
-        qc, _, _ = self.get_initialized_qc(HadBasisState.PLUS)
+        qc = self.get_initialized_qc(HadBasisState.PLUS)
         self.encode(qc)
         self.decode(qc)
         self.check_results_two_results_50_50(qc, ("000", "001"))
