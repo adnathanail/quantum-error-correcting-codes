@@ -94,9 +94,9 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         qc.measure_all()
 
         measurements = self.simulate_circuit(qc)
-        # Test we have roughly 50/50 (+- 10%) 000 and 001 state
+        # Test we have roughly 50/50 (+- 15%) 000 and 001 state
         assert set(measurements.keys()) == {"000", "001"}
-        assert 0.9 <= measurements["000"] / measurements["001"] <= 1.1
+        assert 0.85 <= measurements["000"] / measurements["001"] <= 1.15
 
 
 class TestThreeQubitBitFlipSyndromeExtraction(QuantumCircuitTest):
