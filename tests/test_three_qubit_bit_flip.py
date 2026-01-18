@@ -1,3 +1,5 @@
+import math
+
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 from qiskit.quantum_info import Statevector, random_statevector
 
@@ -45,18 +47,57 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         assert cls.simulate_circuit(qc) == {correct_result_little_endian: 1024}
 
     @classmethod
-    def check_results_two_results_50_50(cls, qc: QuantumCircuit, qreg_results: tuple[str, str], clreg_results: tuple[str, str] = ("", "")) -> None:
+    def check_results_two_results_ratio(
+        cls,
+        qc: QuantumCircuit,
+        qreg_results: tuple[str, str],
+        clreg_results: tuple[str, str],
+        expected_ratio: tuple[int, int],
+        num_std_devs: float = 4.0,
+    ) -> None:
         """
-        Given a quantum circuit and a list of 2 correct results, measure the circuit, and check the results of the
-          measurement are approximately 50/50 between the two correct results (within +- 25%)
+        Given a quantum circuit and two expected results, measure the circuit and check the results
+        match the expected ratio within statistical tolerance.
+
+        Uses binomial distribution to determine acceptable variance. With num_std_devs=4.0,
+        a correct implementation has ~99.99% chance of passing.
+
+        Args:
+            qc: The quantum circuit to measure
+            qreg_results: Tuple of two expected quantum register measurement strings
+            clreg_results: Tuple of two expected classical register measurement strings
+            expected_ratio: Tuple of two ints representing the expected ratio (e.g., (1, 1) for 50/50, (3, 1) for 75/25)
+            num_std_devs: Number of standard deviations for tolerance (default 4.0)
         """
         qc.measure_all()
         measurements = cls.simulate_circuit(qc)
+
         # Add a space, because adding an empty classical register adds a space to the output
         correct_results_little_endian = [qreg_results[i] + " " + clreg_results[i] for i in range(2)]
-        # Test we have roughly 50/50 (+- 25%) of each correct result
+
+        # Check we only have the expected results
         assert set(measurements.keys()) == set(correct_results_little_endian)
-        assert 0.75 <= measurements[correct_results_little_endian[0]] / measurements[correct_results_little_endian[1]] <= 1.25
+
+        total_shots = sum(measurements.values())
+        ratio_sum = expected_ratio[0] + expected_ratio[1]
+
+        for i, result in enumerate(correct_results_little_endian):
+            expected_prob = expected_ratio[i] / ratio_sum
+            expected_count = total_shots * expected_prob
+            std_dev = math.sqrt(total_shots * expected_prob * (1 - expected_prob))
+
+            observed_count = measurements[result]
+            tolerance = num_std_devs * std_dev
+
+            assert abs(observed_count - expected_count) <= tolerance, f"Result '{result}': expected {expected_count:.0f} ± {tolerance:.0f}, got {observed_count}"
+
+    @classmethod
+    def check_results_two_results_50_50(cls, qc: QuantumCircuit, qreg_results: tuple[str, str], clreg_results: tuple[str, str] = ("", "")) -> None:
+        """
+        Given a quantum circuit and two expected results, measure the circuit and check the results
+        are approximately 50/50 between the two.
+        """
+        cls.check_results_two_results_ratio(qc, qreg_results, clreg_results, expected_ratio=(1, 1))
 
     def test_encoding_0(self):
         qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO)
@@ -156,14 +197,25 @@ class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtracti
             qc = self.get_error_correction_circuit(HadBasisState.PLUS, error_index)
             self.check_results_two_results_50_50(qc, (syndrome_measurement_outcome + "000", syndrome_measurement_outcome + "111"), (syndrome_measurement_outcome, syndrome_measurement_outcome))
 
-    def test_random_state_vector_correction(self):
+
+class TestRandomThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipErrorCorrection):
+    @classmethod
+    def get_random_state_vector_and_measurement_results(cls) -> tuple[Statevector, int, int]:
         vec = random_statevector(2)
+
         qc = QuantumCircuit(1)
         qc.initialize(vec)
         qc.measure_all()
-        print(self.simulate_circuit(qc))
-        qc = self.get_error_correction_circuit(vec, 0)
-        self.encode_or_decode(qc)
-        qc.measure_all()
-        print(self.simulate_circuit(qc))
-        assert False
+        results = cls.simulate_circuit(qc)
+        return vec, results["0"], results["1"]
+
+    def test_random_state_vector_correction(self):
+        for _ in range(4):
+            vec, zero_tally, one_tally = self.get_random_state_vector_and_measurement_results()
+            for error_index, syndrome_measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
+                qc = self.get_error_correction_circuit(vec, error_index)
+                self.encode_or_decode(qc)
+
+                self.check_results_two_results_ratio(
+                    qc, (syndrome_measurement_outcome + "000", syndrome_measurement_outcome + "001"), (syndrome_measurement_outcome, syndrome_measurement_outcome), (zero_tally, one_tally)
+                )
