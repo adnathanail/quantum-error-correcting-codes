@@ -36,7 +36,7 @@ class ThreeQubitPhaseFlipTest(ThreeQubitEncodingQuantumCircuitTest):
         )
 
     @classmethod
-    def do_syndrome_testing(cls, initial_state: Statevector, error_index: int, measurement_results: tuple[str, ...], hadamard_basis: bool = False) -> None:
+    def do_syndrome_testing(cls, initial_state: Statevector, error_index: int | None, measurement_results: tuple[str, ...], hadamard_basis: bool = False) -> None:
         qc, _, _ = cls.get_initialized_qc(initial_state, num_qubits=5)
         cls.encode(qc)
         # Deliberate error
