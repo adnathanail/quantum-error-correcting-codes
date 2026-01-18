@@ -1,6 +1,9 @@
 from qiskit import QuantumCircuit
 
-from qecc import get_three_qubit_bit_flip_encoding_decoding_circuit, get_three_qubit_bit_flip_syndrome_extraction_circuit
+from qecc import (
+    get_three_qubit_bit_flip_encoding_decoding_circuit,
+    get_three_qubit_bit_flip_syndrome_extraction_circuit,
+)
 
 from . import HadBasisState
 from .utils import CompBasisState, QuantumCircuitTest
@@ -11,7 +14,11 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         qc = QuantumCircuit(3)
         qc.initialize(CompBasisState.ZERO, [0])
         # Encode
-        qc.compose(get_three_qubit_bit_flip_encoding_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
+        qc.compose(
+            get_three_qubit_bit_flip_encoding_decoding_circuit(),
+            qubits=(0, 1, 2),
+            inplace=True,
+        )
         # Measure
         qc.measure_all()
 
@@ -21,7 +28,11 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         qc = QuantumCircuit(3)
         qc.initialize(CompBasisState.ONE, [0])
         # Encode
-        qc.compose(get_three_qubit_bit_flip_encoding_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
+        qc.compose(
+            get_three_qubit_bit_flip_encoding_decoding_circuit(),
+            qubits=(0, 1, 2),
+            inplace=True,
+        )
         # Measure
         qc.measure_all()
 
@@ -31,9 +42,17 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         qc = QuantumCircuit(3)
         qc.initialize(CompBasisState.ONE, [0])
         # Encode
-        qc.compose(get_three_qubit_bit_flip_encoding_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
+        qc.compose(
+            get_three_qubit_bit_flip_encoding_decoding_circuit(),
+            qubits=(0, 1, 2),
+            inplace=True,
+        )
         # Decode
-        qc.compose(get_three_qubit_bit_flip_encoding_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
+        qc.compose(
+            get_three_qubit_bit_flip_encoding_decoding_circuit(),
+            qubits=(0, 1, 2),
+            inplace=True,
+        )
         # Measure
         qc.measure_all()
 
@@ -43,7 +62,11 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         qc = QuantumCircuit(3)
         qc.initialize(HadBasisState.PLUS, [0])
         # Encode
-        qc.compose(get_three_qubit_bit_flip_encoding_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
+        qc.compose(
+            get_three_qubit_bit_flip_encoding_decoding_circuit(),
+            qubits=(0, 1, 2),
+            inplace=True,
+        )
         # Measure
         qc.measure_all()
 
@@ -56,9 +79,17 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         qc = QuantumCircuit(3)
         qc.initialize(HadBasisState.PLUS, [0])
         # Encode
-        qc.compose(get_three_qubit_bit_flip_encoding_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
+        qc.compose(
+            get_three_qubit_bit_flip_encoding_decoding_circuit(),
+            qubits=(0, 1, 2),
+            inplace=True,
+        )
         # Decode
-        qc.compose(get_three_qubit_bit_flip_encoding_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
+        qc.compose(
+            get_three_qubit_bit_flip_encoding_decoding_circuit(),
+            qubits=(0, 1, 2),
+            inplace=True,
+        )
         # Measure
         qc.measure_all()
 
@@ -73,10 +104,18 @@ class TestThreeQubitBitFlipSyndromeExtraction(QuantumCircuitTest):
         qc = QuantumCircuit(5)
         qc.initialize(CompBasisState.ZERO, [0])
         # Encode
-        qc.compose(get_three_qubit_bit_flip_encoding_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
+        qc.compose(
+            get_three_qubit_bit_flip_encoding_decoding_circuit(),
+            qubits=(0, 1, 2),
+            inplace=True,
+        )
         qc.barrier()
         # Syndrome extraction
-        qc.compose(get_three_qubit_bit_flip_syndrome_extraction_circuit(), qubits=(0, 1, 2, 3, 4), inplace=True)
+        qc.compose(
+            get_three_qubit_bit_flip_syndrome_extraction_circuit(),
+            qubits=(0, 1, 2, 3, 4),
+            inplace=True,
+        )
         qc.barrier()
         # Measure
         qc.measure_all()
