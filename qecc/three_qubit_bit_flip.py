@@ -2,6 +2,9 @@ from qiskit import ClassicalRegister, QuantumCircuit
 
 
 def get_three_qubit_bit_flip_encoding_decoding_circuit() -> QuantumCircuit:
+    """
+    Encode |0> as |000> and |1> as |111>
+    """
     out = QuantumCircuit(3)
     out.cx(0, 1)
     out.cx(0, 2)
