@@ -1,3 +1,3 @@
-from .utils import QuantumCircuitTest, CompBasisState
+from .utils import QuantumCircuitTest, CompBasisState, HadBasisState
 
-__all__ = ["QuantumCircuitTest", "CompBasisState"]
+__all__ = ["QuantumCircuitTest", "CompBasisState", "HadBasisState"]

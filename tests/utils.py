@@ -1,3 +1,5 @@
+from math import sqrt
+
 from qiskit import QuantumCircuit, transpile
 from qiskit.quantum_info import Statevector
 from qiskit_aer import AerSimulator
@@ -8,6 +10,11 @@ simulator = AerSimulator()
 class CompBasisState:
     ZERO = Statevector([1, 0])
     ONE = Statevector([0, 1])
+
+
+class HadBasisState:
+    PLUS = Statevector([1/sqrt(2), 1/sqrt(2)])
+    # ONE = Statevector([0, 1])
 
 
 class QuantumCircuitTest:
