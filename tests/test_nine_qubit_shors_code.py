@@ -18,6 +18,8 @@ from .utils import CompBasisState, NineQubitEncodingQuantumCircuitTest, combs_of
 class NineQubitShorsCodeTest(NineQubitEncodingQuantumCircuitTest):
     ONE_SHOR_BLOCK_STRINGS = ("000", "111")
     ALL_VALID_SHORS_MEASUREMENTS = combs_of_strings(ONE_SHOR_BLOCK_STRINGS, ONE_SHOR_BLOCK_STRINGS, ONE_SHOR_BLOCK_STRINGS)
+    BIT_FLIP_SYNDROMES = ("000001", "000010", "000011", "000100", "001000", "001100", "010000", "100000", "110000")
+    PHASE_FLIP_SYNDROMES = ("01", "10", "11")
 
     @staticmethod
     def encode(qc: QuantumCircuit) -> None:
@@ -184,12 +186,12 @@ class TestNineQubitShorsCodeBitFlipErrorCorrection(NineQubitShorsCodeTest):
     """
 
     def test_correcting_0_deliberate_error(self):
-        for error_index, syndrome in enumerate(["000001", "000010", "000011", "000100", "001000", "001100", "010000", "100000", "110000"]):
+        for error_index, syndrome in enumerate(self.BIT_FLIP_SYNDROMES):
             qc = self.get_bit_flip_error_correction_circuit(CompBasisState.ZERO, error_index)
             self.check_results_one_result(qc, syndrome + "000000000", syndrome)
 
     def test_correcting_1_deliberate_error(self):
-        for error_index, syndrome in enumerate(["000001", "000010", "000011", "000100", "001000", "001100", "010000", "100000", "110000"]):
+        for error_index, syndrome in enumerate(self.BIT_FLIP_SYNDROMES):
             qc = self.get_bit_flip_error_correction_circuit(CompBasisState.ONE, error_index)
             self.check_results_one_result(qc, syndrome + "000000001", syndrome)
 
@@ -218,13 +220,13 @@ class TestNineQubitShorsCodePhaseFlipErrorCorrection(NineQubitShorsCodeTest):
     """
 
     def test_correcting_0_deliberate_error(self):
-        for error_index_multiplier, syndrome in enumerate(["01", "10", "11"]):
+        for error_index_multiplier, syndrome in enumerate(self.PHASE_FLIP_SYNDROMES):
             for error_index_offset in range(3):
                 qc = self.get_phase_flip_error_correction_circuit(CompBasisState.ZERO, error_index_multiplier * 3 + error_index_offset)
                 self.check_results_one_result(qc, syndrome + "000000000", syndrome)
 
     def test_correcting_1_deliberate_error(self):
-        for error_index_multiplier, syndrome in enumerate(["01", "10", "11"]):
+        for error_index_multiplier, syndrome in enumerate(self.PHASE_FLIP_SYNDROMES):
             for error_index_offset in range(3):
                 qc = self.get_phase_flip_error_correction_circuit(CompBasisState.ONE, error_index_multiplier * 3 + error_index_offset)
                 self.check_results_one_result(qc, syndrome + "000000001", syndrome)
@@ -237,5 +239,8 @@ class TestNineQubitShorsCodeCompleteErrorCorrection(NineQubitShorsCodeTest):
     """
 
     def test_correcting_0_deliberate_error(self):
-        qc = self.get_complete_error_correction_circuit(CompBasisState.ZERO, 0, 0)
-        self.check_results_one_result(qc, "01" + "000001" + "000000000", "01 000001")
+        for bit_flip_error_index, bit_flip_syndrome in enumerate(self.BIT_FLIP_SYNDROMES):
+            for phase_flip_error_index_multiplier, phase_flip_syndrome in enumerate(self.PHASE_FLIP_SYNDROMES):
+                for phase_flip_error_index_offset in range(3):
+                    qc = self.get_complete_error_correction_circuit(CompBasisState.ZERO, bit_flip_error_index, phase_flip_error_index_multiplier * 3 + phase_flip_error_index_offset)
+                    self.check_results_one_result(qc, f"{phase_flip_syndrome}{bit_flip_syndrome}000000000", f"{phase_flip_syndrome} {bit_flip_syndrome}")
