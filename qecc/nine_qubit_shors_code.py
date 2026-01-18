@@ -37,3 +37,11 @@ def get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit() -> QuantumC
     out.compose(get_three_qubit_bit_flip_syndrome_extraction_circuit(), qubits=logical_qubit[3:6] + bitflip_syndrome[2:4], inplace=True)
     out.compose(get_three_qubit_bit_flip_syndrome_extraction_circuit(), qubits=logical_qubit[6:9] + bitflip_syndrome[4:6], inplace=True)
     return out
+
+
+def apply_nine_qubit_shors_code_bit_flip_correction(qc: QuantumCircuit) -> None:
+    clreg = qc.cregs[0]
+    qc.measure(qc.qubits[9 : 9 + 6], clreg)
+    for index, syndrome in enumerate([0b000001, 0b000010, 0b000011, 0b000100, 0b001000, 0b001100, 0b010000, 0b100000, 0b110000]):
+        with qc.if_test((clreg, syndrome)):
+            qc.x(index)
