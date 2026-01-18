@@ -63,3 +63,13 @@ class TestNineQubitShorsCodeEncodingDecoding(NineQubitShorsCodeTest):
         self.encode(qc)
         self.decode(qc)
         self.check_results_one_result(qc, "000000001", hadamard_basis=True)
+
+    def test_encoding_decoding_random_state_vector(self):
+        for _ in range(4):
+            vec, zero_tally, one_tally = self.get_random_state_vector_and_measurement_results()
+
+            qc = self.get_initialized_qc(vec)
+            self.encode(qc)
+            self.decode(qc)
+
+            self.check_results_two_results_ratio(qc, ("000000000", "000000001"), ("", ""), (zero_tally, one_tally))
