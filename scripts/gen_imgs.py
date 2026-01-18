@@ -4,6 +4,8 @@ from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 
 from qecc import get_three_qubit_phase_flip_encoding_circuit
 from qecc.nine_qubit_shors_code import (
+    apply_nine_qubit_shors_code_bit_flip_correction,
+    apply_nine_qubit_shors_code_phase_flip_correction,
     get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit,
     get_nine_qubit_shors_code_encoding_circuit,
     get_nine_qubit_shors_code_phase_flip_syndrome_extraction_circuit,
@@ -21,7 +23,7 @@ def draw_circuit(circuit: QuantumCircuit, file_path: Path) -> None:
 def three_qubit_bit_flip() -> None:
     out_dir = imgs_dir / "three_qubit_bit_flip"
     # Encoding
-    draw_circuit(get_three_qubit_bit_flip_encoding_decoding_circuit(), out_dir / "encoding_decoding.png")
+    draw_circuit(get_three_qubit_bit_flip_encoding_decoding_circuit(), out_dir / "encoding.png")
 
     # Syndrome extraction
     qc = QuantumCircuit(5)
@@ -87,6 +89,31 @@ def nine_qubit_shors_code() -> None:
         inplace=True,
     )
     draw_circuit(qc, out_dir / "syndrome_extraction.png")
+
+    # Error correction
+    qc = QuantumCircuit(QuantumRegister(9 + 6 + 2), ClassicalRegister(6), ClassicalRegister(2))
+    qc.compose(
+        get_nine_qubit_shors_code_encoding_circuit(),
+        qubits=qc.qubits[:9],
+        inplace=True,
+    )
+    qc.barrier()
+    qc.compose(
+        get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit(),
+        qubits=qc.qubits[:15],
+        inplace=True,
+    )
+    qc.barrier()
+    qc.compose(
+        get_nine_qubit_shors_code_phase_flip_syndrome_extraction_circuit(),
+        qubits=qc.qubits[:9] + qc.qubits[15:17],
+        inplace=True,
+    )
+    qc.barrier()
+    apply_nine_qubit_shors_code_bit_flip_correction(qc)
+    qc.barrier()
+    apply_nine_qubit_shors_code_phase_flip_correction(qc)
+    draw_circuit(qc, out_dir / "error_correction.png")
 
 
 if __name__ == "__main__":
