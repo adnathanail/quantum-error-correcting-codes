@@ -32,14 +32,22 @@ class QuantumCircuitTest:
         return out
 
     @staticmethod
-    def simulate_circuit(qc: QuantumCircuit) -> dict[str, int]:
+    def simulate_circuit(qc: QuantumCircuit, num_shots: int = 1024) -> dict[str, int]:
         compiled_circuit = transpile(qc, simulator)
-        result = simulator.run(compiled_circuit, shots=1024).result()
+        result = simulator.run(compiled_circuit, shots=num_shots).result()
         return result.get_counts()
 
     @classmethod
     def _check_results_ratio(
-        cls, qc: QuantumCircuit, qreg_results: tuple[str, ...], clreg_results: tuple[str, ...], expected_ratios: tuple[int, ...], *, num_std_devs: float = 4.0, hadamard_qubits: int = 0
+        cls,
+        qc: QuantumCircuit,
+        qreg_results: tuple[str, ...],
+        clreg_results: tuple[str, ...],
+        expected_ratios: tuple[int, ...],
+        *,
+        num_std_devs: float = 4.0,
+        hadamard_qubits: int = 0,
+        num_shots: int = 1024,
     ) -> None:
         """
         Generic function to check quantum circuit measurement results against expected ratios.
@@ -57,7 +65,7 @@ class QuantumCircuitTest:
         for qb_index in range(hadamard_qubits):
             qc.h(qb_index)
         qc.measure_all()
-        measurements = cls.simulate_circuit(qc)
+        measurements = cls.simulate_circuit(qc, num_shots=num_shots)
 
         # Add a space, because adding an empty classical register adds a space to the output
         correct_results_little_endian = [qreg_results[i] + " " + clreg_results[i] for i in range(len(qreg_results))]
@@ -84,7 +92,8 @@ class QuantumCircuitTest:
         Given a quantum circuit and a single correct result, measure the circuit, and check the results of the
           measurement match the inputted correct result
         """
-        cls._check_results_ratio(qc, (qreg_result,), (clreg_result,), (1,), hadamard_qubits=hadamard_qubits)
+        # Only run 8 shots, because we only expect one result, so we don't care about ratios at all
+        cls._check_results_ratio(qc, (qreg_result,), (clreg_result,), (1,), hadamard_qubits=hadamard_qubits, num_shots=8)
 
     @classmethod
     def check_results_two_results_ratio(
