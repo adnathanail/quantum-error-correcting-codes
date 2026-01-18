@@ -174,9 +174,8 @@ class TestNineQubitShorsCodeBitFlipSyndromeExtraction(NineQubitShorsCodeTest):
             #  - The syndrome measurement is 01, 10, 11 depending i % 3, with 00's on either side depending on i // 3
             #  - The logical qubit measurement has similar 000 padding, and the block with the error's decoded value
             #    was worked out by hand
-            syndrome_measurement = (2 - (error_index // 3)) * "00" + f"{(error_index % 3) + 1:02b}" + (error_index // 3) * "00"
             logical_qubit_measurement = (2 - (error_index // 3)) * "000" + decoded_errored_strings[error_index % 3] + (error_index // 3) * "000"
-            self.check_results_one_result(qc, syndrome_measurement + logical_qubit_measurement)
+            self.check_results_one_result(qc, self.BIT_FLIP_SYNDROMES[error_index] + logical_qubit_measurement)
 
 
 class TestNineQubitShorsCodeBitFlipErrorCorrection(NineQubitShorsCodeTest):
@@ -209,8 +208,7 @@ class TestNineQubitShorsCodePhaseFlipSyndromeExtraction(NineQubitShorsCodeTest):
             # # Work out the correct measurement result:
             # #  - The syndrome measurement is 01 for Z in the first block, 10 2nd, 11 3rd
             # #  - The logical qubit measurement is always 001001001
-            syndrome_measurement = f"{(error_index // 3) + 1:02b}"
-            self.check_results_one_result(qc, syndrome_measurement + logical_qubit_measurements_by_block[error_index // 3])
+            self.check_results_one_result(qc, self.PHASE_FLIP_SYNDROMES[error_index // 3] + logical_qubit_measurements_by_block[error_index // 3])
 
 
 class TestNineQubitShorsCodePhaseFlipErrorCorrection(NineQubitShorsCodeTest):
