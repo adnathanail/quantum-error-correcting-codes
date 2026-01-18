@@ -16,7 +16,7 @@ class CompBasisState:
 
 class HadBasisState:
     PLUS = Statevector([1 / sqrt(2), 1 / sqrt(2)])
-    # ONE = Statevector([0, 1])
+    MINUS = Statevector([1 / sqrt(2), -1 / sqrt(2)])
 
 
 class QuantumCircuitTest:
@@ -54,9 +54,8 @@ class QuantumCircuitTest:
             num_std_devs: Number of standard deviations for tolerance (default 4.0)
         """
         if hadamard_basis:
-            qc.h(0)
-            qc.h(1)
-            qc.h(2)
+            for qb_index in range(len(qreg_results)):
+                qc.h(qb_index)
         qc.measure_all()
         measurements = cls.simulate_circuit(qc)
 
