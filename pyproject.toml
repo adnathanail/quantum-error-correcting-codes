@@ -4,4 +4,12 @@ version = "0.1.0"
 description = "Implementing various quantum error-correcting codes in Qiskit, just for fun really"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "qiskit>=2.3.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "qiskit-aer>=0.17.2",
+]
