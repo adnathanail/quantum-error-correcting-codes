@@ -29,5 +29,7 @@ jobs:
         enable-cache: true
     - name: Install the project
       run: uv sync --locked --all-extras --dev
+    - name: Run typechecking
+      run: uv run ty check
     - name: Run tests
-      run: uv run pytest tests
+      run: uv run pytest
