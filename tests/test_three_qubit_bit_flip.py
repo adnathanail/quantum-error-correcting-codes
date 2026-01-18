@@ -12,11 +12,11 @@ from .utils import CompBasisState, QuantumCircuitTest
 
 class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
     @staticmethod
-    def get_initialized_qc(state_to_initialize: Statevector) -> QuantumCircuit:
+    def get_initialized_qc(state_to_initialize: Statevector, *, num_qubits: int = 3) -> QuantumCircuit:
         """
-        Given a (normalized) state vector, return a 3-qubit quantum circuit with the first qubit initialised to the input vector
+        Given a (normalized) state vector, return a quantum circuit with the specified number of qubits, with the first qubit initialised to the input vector
         """
-        out = QuantumCircuit(3)
+        out = QuantumCircuit(num_qubits)
         out.initialize(state_to_initialize, [0])
         return out
 
@@ -82,25 +82,29 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         self.check_results_two_results_50_50(qc, ["000", "100"])
 
 
-class TestThreeQubitBitFlipSyndromeExtraction(QuantumCircuitTest):
-    def test_encoding_0(self):
-        qc = QuantumCircuit(5)
-        qc.initialize(CompBasisState.ZERO, [0])
-        # Encode
-        qc.compose(
-            get_three_qubit_bit_flip_encoding_decoding_circuit(),
-            qubits=(0, 1, 2),
-            inplace=True,
-        )
-        qc.barrier()
-        # Syndrome extraction
+class TestThreeQubitBitFlipSyndromeExtraction(TestThreeQubitBitFlipEncodingDecoding):
+    @staticmethod
+    def syndrome_extraction(qc: QuantumCircuit) -> None:
+        """
+        Given a 5-qubit quantum circuit, apply the 3 qubit bit flip syndrome extraction circuit
+        """
         qc.compose(
             get_three_qubit_bit_flip_syndrome_extraction_circuit(),
             qubits=(0, 1, 2, 3, 4),
             inplace=True,
         )
-        qc.barrier()
-        # Measure
-        qc.measure_all()
 
-        assert self.simulate_circuit(qc) == {"00000": 1024}
+    def test_encoding_0(self):
+        qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5)
+        self.encode_or_decode(qc)
+        self.syndrome_extraction(qc)
+        self.check_results_one_result(qc, "00000")
+
+    def test_encoding_0_with_deliberate_error(self):
+        for error_index, measurement_outcome in [(0, "10001"), (1, "01010"), (2, "00111")]:
+            qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5)
+            self.encode_or_decode(qc)
+            # Deliberate error
+            qc.x(error_index)
+            self.syndrome_extraction(qc)
+            self.check_results_one_result(qc, measurement_outcome)
