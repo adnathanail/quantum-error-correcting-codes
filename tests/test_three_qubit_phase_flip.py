@@ -1,7 +1,8 @@
 from qiskit import QuantumCircuit
+from qiskit.quantum_info import Statevector
 
 from qecc import get_three_qubit_phase_flip_encoding_circuit
-from qecc.three_qubit_phase_flip import get_three_qubit_phase_flip_decoding_circuit, get_three_qubit_phase_flip_syndrome_extraction_circuit
+from qecc.three_qubit_phase_flip import apply_three_qubit_phase_flip_correction, get_three_qubit_phase_flip_decoding_circuit, get_three_qubit_phase_flip_syndrome_extraction_circuit
 
 from .utils import CompBasisState, HadBasisState, ThreeQubitEncodingQuantumCircuitTest
 
@@ -86,3 +87,40 @@ class TestThreeQubitPhaseFlipSyndromeExtraction(TestThreeQubitPhaseFlipEncodingD
                     qc.z(error_index)
                 self.syndrome_extraction(qc)
                 self.check_results_n_results_even_chance(qc, tuple(syndrome + state for state in self.ALL_THREE_QUBIT_STATES))
+
+
+class TestThreeQubitPhaseFlipErrorCorrection(TestThreeQubitPhaseFlipSyndromeExtraction):
+    """
+    Tests applying each possible X error, and making sure the correction works properly,
+      on |0>, |1>, and |+> states
+    """
+
+    @classmethod
+    def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
+        # Initialise
+        out, _, clreg = cls.get_initialized_qc(state_to_initialize, num_qubits=5, num_clbits=2)
+        # Encode
+        cls.encode(out)
+        # Deliberate error
+        if error_index is not None:
+            out.z(error_index)
+        # Syndrome extraction
+        cls.syndrome_extraction(out)
+        # Syndrome correction
+        apply_three_qubit_phase_flip_correction(out, clreg)
+        return out
+
+    def test_correcting_0_deliberate_error(self):
+        for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
+            qc = self.get_error_correction_circuit(CompBasisState.ZERO, error_index)
+            self.check_results_one_result(qc, syndrome + "000", syndrome, hadamard_basis=True)
+
+    def test_correcting_1_deliberate_error(self):
+        for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
+            qc = self.get_error_correction_circuit(CompBasisState.ONE, error_index)
+            self.check_results_one_result(qc, syndrome + "111", syndrome, hadamard_basis=True)
+
+    def test_correcting_plus_deliberate_error(self):
+        for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
+            qc = self.get_error_correction_circuit(HadBasisState.PLUS, error_index)
+            self.check_results_two_results_50_50(qc, (syndrome + "000", syndrome + "111"), (syndrome, syndrome), hadamard_basis=True)

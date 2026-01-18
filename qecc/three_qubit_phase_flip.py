@@ -2,7 +2,7 @@
 Reference https://quantum.cloud.ibm.com/learning/en/courses/foundations-of-quantum-error-correction/correcting-quantum-errors/repetition-codes#phase-flip-errors
 """
 
-from qiskit import QuantumCircuit
+from qiskit import ClassicalRegister, QuantumCircuit
 
 
 def get_three_qubit_phase_flip_encoding_circuit() -> QuantumCircuit:
@@ -42,3 +42,13 @@ def get_three_qubit_phase_flip_syndrome_extraction_circuit() -> QuantumCircuit:
     out.h(3)
     out.h(4)
     return out
+
+
+def apply_three_qubit_phase_flip_correction(qc: QuantumCircuit, clreg: ClassicalRegister) -> None:
+    qc.measure((3, 4), clreg)
+    with qc.if_test((clreg, 0b01)):
+        qc.z(0)
+    with qc.if_test((clreg, 0b10)):
+        qc.z(1)
+    with qc.if_test((clreg, 0b11)):
+        qc.z(2)
