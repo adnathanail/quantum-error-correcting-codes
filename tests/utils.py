@@ -38,7 +38,7 @@ class QuantumCircuitTest:
 
     @classmethod
     def _check_results_ratio(
-        cls, qc: QuantumCircuit, qreg_results: tuple[str, ...], clreg_results: tuple[str, ...], expected_ratios: tuple[int, ...], *, num_std_devs: float = 4.0, hadamard_basis: bool = True
+        cls, qc: QuantumCircuit, qreg_results: tuple[str, ...], clreg_results: tuple[str, ...], expected_ratios: tuple[int, ...], *, num_std_devs: float = 4.0, hadamard_basis: bool = False
     ) -> None:
         """
         Generic function to check quantum circuit measurement results against expected ratios.
