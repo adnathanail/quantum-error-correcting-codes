@@ -49,8 +49,7 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         """
         qc.measure_all()
         measurements = cls.simulate_circuit(qc)
-        # Reverse the order of correct results, because Qiskit works backwards
-        #   add a space, because adding an empty classical register adds a space to the output
+        # Add a space, because adding an empty classical register adds a space to the output
         correct_results_little_endian = [res + " " for res in correct_results]
         # Test we have roughly 50/50 (+- 20%) of each correct result
         assert set(measurements.keys()) == set(correct_results_little_endian)
@@ -129,10 +128,12 @@ class TestThreeQubitBitFlipSyndromeExtraction(TestThreeQubitBitFlipEncodingDecod
 
 class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtraction):
     def test_correcting_0_deliberate_error(self):
-        qc, _, clreg = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5, num_clbits=2)
-        self.encode_or_decode(qc)
-        # Deliberate error
-        qc.x(0)
-        self.syndrome_extraction(qc)
-        apply_three_qubit_syndrome_correction(qc, clreg)
-        self.check_results_one_result(qc, "01000", "01")
+        for error_index, measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
+            qc, _, clreg = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=5, num_clbits=2)
+            self.encode_or_decode(qc)
+            # Deliberate error
+            if error_index is not None:
+                qc.x(error_index)
+            self.syndrome_extraction(qc)
+            apply_three_qubit_syndrome_correction(qc, clreg)
+            self.check_results_one_result(qc, measurement_outcome + "000", measurement_outcome)
