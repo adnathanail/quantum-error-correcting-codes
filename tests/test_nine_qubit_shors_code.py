@@ -1,7 +1,7 @@
 from qiskit import QuantumCircuit
 
 from qecc import get_nine_qubit_shors_code_encoding_circuit
-from qecc.nine_qubit_shors_code import get_nine_qubit_shors_code_decoding_circuit
+from qecc.nine_qubit_shors_code import get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit, get_nine_qubit_shors_code_decoding_circuit
 
 from . import HadBasisState
 from .utils import CompBasisState, NineQubitEncodingQuantumCircuitTest, combs_of_strings
@@ -30,6 +30,14 @@ class NineQubitShorsCodeTest(NineQubitEncodingQuantumCircuitTest):
         qc.compose(
             get_nine_qubit_shors_code_decoding_circuit(),
             qubits=(0, 1, 2, 3, 4, 5, 6, 7, 8),
+            inplace=True,
+        )
+
+    @staticmethod
+    def syndrome_extraction(qc: QuantumCircuit) -> None:
+        qc.compose(
+            get_nine_qubit_shors_code_bit_flip_syndrome_extraction_circuit(),
+            qubits=(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14),
             inplace=True,
         )
 
@@ -73,3 +81,15 @@ class TestNineQubitShorsCodeEncodingDecoding(NineQubitShorsCodeTest):
             self.decode(qc)
 
             self.check_results_two_results_ratio(qc, ("000000000", "000000001"), ("", ""), (zero_tally, one_tally))
+
+
+class TestNineQubitShorsCodeBitFlipSyndromeExtraction(NineQubitShorsCodeTest):
+    def test_encoding_0_syndrome_no_error(self):
+        qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=9 + 6 + 2)
+        self.encode(qc)
+        qc.barrier()
+        self.syndrome_extraction(qc)
+        qc.barrier()
+        self.decode(qc)
+        qc.barrier()
+        self.check_results_one_result(qc, "00000000000000000")
