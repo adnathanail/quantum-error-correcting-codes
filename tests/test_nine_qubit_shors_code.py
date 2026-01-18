@@ -85,14 +85,18 @@ class TestNineQubitShorsCodeEncodingDecoding(NineQubitShorsCodeTest):
 
 class TestNineQubitShorsCodeBitFlipSyndromeExtraction(NineQubitShorsCodeTest):
     def test_encoding_0_syndrome_deliberate_error(self):
-        """
-        Just testing 1 deliberate X-error, as I had to work out by hand what the effect of decoding the errored code
-          without correction would be
-        """
-        qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=9 + 6)
-        self.encode(qc)
-        # Deliberate error
-        qc.x(0)
-        self.syndrome_extraction(qc)
-        self.decode(qc)
-        self.check_results_one_result(qc, "000001" + "000000110")
+        decoded_errored_strings = ("110", "010", "100")  # X on 1st, 2nd, 3rd qubit of block
+        for i in range(9):
+            qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=9 + 6)
+            self.encode(qc)
+            # Deliberate error
+            qc.x(i)
+            self.syndrome_extraction(qc)
+            self.decode(qc)
+            # Work out the correct measurement result:
+            #  - The syndrome measurement is 01, 10, 11 depending i % 3, with 00's on either side depending on i // 3
+            #  - The logical qubit measurement has similar 000 padding, and the block with the error's decoded value
+            #    was worked out by hand
+            syndrome_measurement = (2 - (i // 3)) * "00" + f"{(i % 3) + 1:02b}" + (i // 3) * "00"
+            logical_qubit_measurement = (2 - (i // 3)) * "000" + decoded_errored_strings[i % 3] + (i // 3) * "000"
+            self.check_results_one_result(qc, syndrome_measurement + logical_qubit_measurement)
