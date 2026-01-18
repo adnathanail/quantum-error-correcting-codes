@@ -1,6 +1,6 @@
 from qiskit import QuantumCircuit
 
-from src.three_qubit_bit_flip import get_three_qubit_bit_flip_encoding_decoding_circuit
+from qecc import get_three_qubit_bit_flip_encoding_decoding_circuit, get_three_qubit_bit_flip_syndrome_extraction_circuit
 from . import HadBasisState
 from .utils import QuantumCircuitTest, CompBasisState
 
@@ -65,3 +65,19 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
         # Test we have roughly 50/50 (+- 10%) 000 and 001 state
         assert set(measurements.keys()) == {"000", "001"}
         assert 0.9 <= measurements["000"] / measurements["001"] <= 1.1
+
+
+class TestThreeQubitBitFlipSyndromeExtraction(QuantumCircuitTest):
+    def test_encoding_0(self):
+        qc = QuantumCircuit(5)
+        qc.initialize(CompBasisState.ZERO, [0])
+        # Encode
+        qc.compose(get_three_qubit_bit_flip_encoding_decoding_circuit(), qubits=(0, 1, 2), inplace=True)
+        qc.barrier()
+        # Syndrome extraction
+        qc.compose(get_three_qubit_bit_flip_syndrome_extraction_circuit(), qubits=(0, 1, 2, 3, 4), inplace=True)
+        qc.barrier()
+        # Measure
+        qc.measure_all()
+
+        assert self.simulate_circuit(qc) == {"00000": 1024}
