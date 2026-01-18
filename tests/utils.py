@@ -1,3 +1,4 @@
+import itertools
 import math
 from math import sqrt
 
@@ -20,7 +21,7 @@ class HadBasisState:
 
 class QuantumCircuitTest:
     @staticmethod
-    def get_initialized_qc(state_to_initialize: Statevector, *, num_qubits: int = 3, num_clbits: int = 0) -> QuantumCircuit:
+    def get_initialized_qc(state_to_initialize: Statevector, *, num_qubits: int, num_clbits: int = 0) -> QuantumCircuit:
         """
         Given a (normalized) state vector, return a quantum circuit with the specified number of qubits, with the first
           qubit initialised to the input vector
@@ -131,3 +132,17 @@ class QuantumCircuitTest:
 
 class ThreeQubitEncodingQuantumCircuitTest(QuantumCircuitTest):
     ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS: tuple[tuple[int | None, str], ...] = ((None, "00"), (0, "01"), (1, "10"), (2, "11"))
+
+    @staticmethod
+    def get_initialized_qc(state_to_initialize: Statevector, *, num_qubits: int = 3, num_clbits: int = 0) -> QuantumCircuit:
+        return QuantumCircuitTest.get_initialized_qc(state_to_initialize, num_qubits=num_qubits, num_clbits=num_clbits)
+
+
+class NineQubitEncodingQuantumCircuitTest(QuantumCircuitTest):
+    @staticmethod
+    def get_initialized_qc(state_to_initialize: Statevector, *, num_qubits: int = 9, num_clbits: int = 0) -> QuantumCircuit:
+        return QuantumCircuitTest.get_initialized_qc(state_to_initialize, num_qubits=num_qubits, num_clbits=num_clbits)
+
+
+def combs_of_strings(*strings: tuple[str, ...]):
+    return ["".join(comb) for comb in itertools.product(*strings)]

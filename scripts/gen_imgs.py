@@ -3,6 +3,7 @@ from pathlib import Path
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 
 from qecc import get_three_qubit_phase_flip_encoding_circuit
+from qecc.nine_qubit_shors_code import get_nine_qubit_shors_code_encoding_circuit
 from qecc.three_qubit_bit_flip import apply_three_qubit_bit_flip_correction, get_three_qubit_bit_flip_encoding_decoding_circuit, get_three_qubit_bit_flip_syndrome_extraction_circuit
 from qecc.three_qubit_phase_flip import apply_three_qubit_phase_flip_correction, get_three_qubit_phase_flip_syndrome_extraction_circuit
 
@@ -57,6 +58,13 @@ def three_qubit_phase_flip() -> None:
     draw_circuit(qc, out_dir / "error_correction.png")
 
 
+def nine_qubit_shors_code() -> None:
+    out_dir = imgs_dir / "nine_qubit_shors_code"
+    # Encoding
+    draw_circuit(get_nine_qubit_shors_code_encoding_circuit(), out_dir / "encoding.png")
+
+
 if __name__ == "__main__":
     three_qubit_bit_flip()
     three_qubit_phase_flip()
+    nine_qubit_shors_code()
