@@ -171,29 +171,40 @@ class TestThreeQubitBitFlipSyndromeExtraction(TestThreeQubitBitFlipEncodingDecod
 
 
 class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtraction):
+    """
+    Tests applying each possible X error, and making sure the correction works properly,
+      on |0>, |1>, and |+> states
+    """
+
+    ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS: tuple[tuple[int | None, str], ...] = ((None, "00"), (0, "01"), (1, "10"), (2, "11"))
+
     @classmethod
     def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
+        # Initialise
         out, _, clreg = cls.get_initialized_qc(state_to_initialize, num_qubits=5, num_clbits=2)
+        # Encode
         cls.encode_or_decode(out)
         # Deliberate error
         if error_index is not None:
             out.x(error_index)
+        # Syndrome extraction
         cls.syndrome_extraction(out)
+        # Syndrome correction
         apply_three_qubit_syndrome_correction(out, clreg)
         return out
 
     def test_correcting_0_deliberate_error(self):
-        for error_index, syndrome_measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
+        for error_index, syndrome_measurement_outcome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
             qc = self.get_error_correction_circuit(CompBasisState.ZERO, error_index)
             self.check_results_one_result(qc, syndrome_measurement_outcome + "000", syndrome_measurement_outcome)
 
     def test_correcting_1_deliberate_error(self):
-        for error_index, syndrome_measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
+        for error_index, syndrome_measurement_outcome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
             qc = self.get_error_correction_circuit(CompBasisState.ONE, error_index)
             self.check_results_one_result(qc, syndrome_measurement_outcome + "111", syndrome_measurement_outcome)
 
     def test_correcting_plus_deliberate_error(self):
-        for error_index, syndrome_measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
+        for error_index, syndrome_measurement_outcome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
             qc = self.get_error_correction_circuit(HadBasisState.PLUS, error_index)
             self.check_results_two_results_50_50(qc, (syndrome_measurement_outcome + "000", syndrome_measurement_outcome + "111"), (syndrome_measurement_outcome, syndrome_measurement_outcome))
 
@@ -201,8 +212,9 @@ class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtracti
 class TestRandomThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipErrorCorrection):
     @classmethod
     def get_random_state_vector_and_measurement_results(cls) -> tuple[Statevector, int, int]:
+        # Generate random 1-qubit state vector
         vec = random_statevector(2)
-
+        # Measure the state vector, so we know roughly what the measurement results look like
         qc = QuantumCircuit(1)
         qc.initialize(vec)
         qc.measure_all()
@@ -210,9 +222,14 @@ class TestRandomThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipErrorCorre
         return vec, results["0"], results["1"]
 
     def test_random_state_vector_correction(self):
+        """
+        For a random state vector, apply each possible X error, and check the error is corrected, by checking
+          the measurement results ratio of 0:1 is roughly the same as just the state vector by itself
+        Repeated 4 times for safety
+        """
         for _ in range(4):
             vec, zero_tally, one_tally = self.get_random_state_vector_and_measurement_results()
-            for error_index, syndrome_measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
+            for error_index, syndrome_measurement_outcome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
                 qc = self.get_error_correction_circuit(vec, error_index)
                 self.encode_or_decode(qc)
 
