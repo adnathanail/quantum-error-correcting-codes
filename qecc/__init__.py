@@ -1,4 +1,9 @@
 from .three_qubit_bit_flip import apply_three_qubit_syndrome_correction, get_three_qubit_bit_flip_encoding_decoding_circuit, get_three_qubit_bit_flip_syndrome_extraction_circuit
-from .three_qubit_phase_flip import get_three_qubit_phase_flip_encoding
+from .three_qubit_phase_flip import get_three_qubit_phase_flip_encoding_circuit
 
-__all__ = ["apply_three_qubit_syndrome_correction", "get_three_qubit_bit_flip_encoding_decoding_circuit", "get_three_qubit_bit_flip_syndrome_extraction_circuit", "get_three_qubit_phase_flip_encoding"]
+__all__ = [
+    "apply_three_qubit_syndrome_correction",
+    "get_three_qubit_bit_flip_encoding_decoding_circuit",
+    "get_three_qubit_bit_flip_syndrome_extraction_circuit",
+    "get_three_qubit_phase_flip_encoding_circuit",
+]
