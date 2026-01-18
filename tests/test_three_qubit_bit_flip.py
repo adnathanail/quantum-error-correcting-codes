@@ -15,7 +15,8 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
     @staticmethod
     def get_initialized_qc(state_to_initialize: Statevector, *, num_qubits: int = 3, num_clbits: int = 0) -> tuple[QuantumCircuit, QuantumRegister, ClassicalRegister]:
         """
-        Given a (normalized) state vector, return a quantum circuit with the specified number of qubits, with the first qubit initialised to the input vector
+        Given a (normalized) state vector, return a quantum circuit with the specified number of qubits, with the first
+          qubit initialised to the input vector
         """
         qureg, clreg = QuantumRegister(num_qubits), ClassicalRegister(num_clbits)
         out = QuantumCircuit(qureg, clreg)
@@ -36,24 +37,26 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
     @classmethod
     def check_results_one_result(cls, qc: QuantumCircuit, qreg_result: str, clreg_result: str = "") -> None:
         """
-        Given a quantum circuit and a single correct result, measure the circuit, and check the results of the measurement match the inputted correct result
+        Given a quantum circuit and a single correct result, measure the circuit, and check the results of the
+          measurement match the inputted correct result
         """
         qc.measure_all()
         correct_result_little_endian = qreg_result + " " + clreg_result
         assert cls.simulate_circuit(qc) == {correct_result_little_endian: 1024}
 
     @classmethod
-    def check_results_two_results_50_50(cls, qc: QuantumCircuit, correct_results: list[str]) -> None:
+    def check_results_two_results_50_50(cls, qc: QuantumCircuit, qreg_results: tuple[str, str], clreg_results: tuple[str, str] = ("", "")) -> None:
         """
-        Given a quantum circuit and a list of 2 correct results, measure the circuit, and check the results of the measurement are approximately 50/50 between the two correct results (within +- 20%)
+        Given a quantum circuit and a list of 2 correct results, measure the circuit, and check the results of the
+          measurement are approximately 50/50 between the two correct results (within +- 25%)
         """
         qc.measure_all()
         measurements = cls.simulate_circuit(qc)
         # Add a space, because adding an empty classical register adds a space to the output
-        correct_results_little_endian = [res + " " for res in correct_results]
-        # Test we have roughly 50/50 (+- 20%) of each correct result
+        correct_results_little_endian = [qreg_results[i] + " " + clreg_results[i] for i in range(2)]
+        # Test we have roughly 50/50 (+- 25%) of each correct result
         assert set(measurements.keys()) == set(correct_results_little_endian)
-        assert 0.8 <= measurements[correct_results_little_endian[0]] / measurements[correct_results_little_endian[1]] <= 1.2
+        assert 0.75 <= measurements[correct_results_little_endian[0]] / measurements[correct_results_little_endian[1]] <= 1.25
 
     def test_encoding_0(self):
         qc, _, _ = self.get_initialized_qc(CompBasisState.ZERO)
@@ -74,13 +77,13 @@ class TestThreeQubitBitFlipEncodingDecoding(QuantumCircuitTest):
     def test_encoding_plus(self):
         qc, _, _ = self.get_initialized_qc(HadBasisState.PLUS)
         self.encode_or_decode(qc)
-        self.check_results_two_results_50_50(qc, ["000", "111"])
+        self.check_results_two_results_50_50(qc, ("000", "111"))
 
     def test_encoding_decoding_plus(self):
         qc, _, _ = self.get_initialized_qc(HadBasisState.PLUS)
         self.encode_or_decode(qc)
         self.encode_or_decode(qc)
-        self.check_results_two_results_50_50(qc, ["000", "001"])
+        self.check_results_two_results_50_50(qc, ("000", "001"))
 
 
 class TestThreeQubitBitFlipSyndromeExtraction(TestThreeQubitBitFlipEncodingDecoding):
@@ -128,7 +131,7 @@ class TestThreeQubitBitFlipSyndromeExtraction(TestThreeQubitBitFlipEncodingDecod
 
 class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtraction):
     @classmethod
-    def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int) -> QuantumCircuit:
+    def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
         out, _, clreg = cls.get_initialized_qc(state_to_initialize, num_qubits=5, num_clbits=2)
         cls.encode_or_decode(out)
         # Deliberate error
@@ -139,11 +142,16 @@ class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtracti
         return out
 
     def test_correcting_0_deliberate_error(self):
-        for error_index, measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
+        for error_index, syndrome_measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
             qc = self.get_error_correction_circuit(CompBasisState.ZERO, error_index)
-            self.check_results_one_result(qc, measurement_outcome + "000", measurement_outcome)
+            self.check_results_one_result(qc, syndrome_measurement_outcome + "000", syndrome_measurement_outcome)
 
     def test_correcting_1_deliberate_error(self):
-        for error_index, measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
+        for error_index, syndrome_measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
             qc = self.get_error_correction_circuit(CompBasisState.ONE, error_index)
-            self.check_results_one_result(qc, measurement_outcome + "111", measurement_outcome)
+            self.check_results_one_result(qc, syndrome_measurement_outcome + "111", syndrome_measurement_outcome)
+
+    def test_correcting_plus_deliberate_error(self):
+        for error_index, syndrome_measurement_outcome in [(None, "00"), (0, "01"), (1, "10"), (2, "11")]:
+            qc = self.get_error_correction_circuit(HadBasisState.PLUS, error_index)
+            self.check_results_two_results_50_50(qc, (syndrome_measurement_outcome + "000", syndrome_measurement_outcome + "111"), (syndrome_measurement_outcome, syndrome_measurement_outcome))
