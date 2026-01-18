@@ -84,12 +84,15 @@ class TestNineQubitShorsCodeEncodingDecoding(NineQubitShorsCodeTest):
 
 
 class TestNineQubitShorsCodeBitFlipSyndromeExtraction(NineQubitShorsCodeTest):
-    def test_encoding_0_syndrome_no_error(self):
-        qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=9 + 6 + 2)
+    def test_encoding_0_syndrome_deliberate_error(self):
+        """
+        Just testing 1 deliberate X-error, as I had to work out by hand what the effect of decoding the errored code
+          without correction would be
+        """
+        qc = self.get_initialized_qc(CompBasisState.ZERO, num_qubits=9 + 6)
         self.encode(qc)
-        qc.barrier()
+        # Deliberate error
+        qc.x(0)
         self.syndrome_extraction(qc)
-        qc.barrier()
         self.decode(qc)
-        qc.barrier()
-        self.check_results_one_result(qc, "00000000000000000")
+        self.check_results_one_result(qc, "000001" + "000000110")
