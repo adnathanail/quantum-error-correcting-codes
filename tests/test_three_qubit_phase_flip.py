@@ -36,14 +36,14 @@ class ThreeQubitPhaseFlipTest(ThreeQubitEncodingQuantumCircuitTest):
         )
 
     @classmethod
-    def do_syndrome_testing(cls, initial_state: Statevector, error_index: int | None, measurement_results: tuple[str, ...], hadamard_basis: bool = False) -> None:
+    def do_syndrome_testing(cls, initial_state: Statevector, error_index: int | None, measurement_results: tuple[str, ...], hadamard_qubits: int = 0) -> None:
         qc = cls.get_initialized_qc(initial_state, num_qubits=5)
         cls.encode(qc)
         # Deliberate error
         if error_index is not None:
             qc.z(error_index)
         cls.syndrome_extraction(qc)
-        cls.check_results_n_results_even_chance(qc, measurement_results, hadamard_basis=hadamard_basis)
+        cls.check_results_n_results_even_chance(qc, measurement_results, hadamard_qubits=hadamard_qubits)
 
     @classmethod
     def get_error_correction_circuit(cls, state_to_initialize: Statevector, error_index: int | None) -> QuantumCircuit:
@@ -70,7 +70,7 @@ class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitPhaseFlipTest):
         # Hadamard basis
         qc = self.get_initialized_qc(CompBasisState.ZERO)
         self.encode(qc)
-        self.check_results_one_result(qc, "000", hadamard_basis=True)
+        self.check_results_one_result(qc, "000", hadamard_qubits=3)
 
     def test_encoding_1(self):
         # Computational basis
@@ -81,7 +81,7 @@ class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitPhaseFlipTest):
         # Hadamard basis
         qc = self.get_initialized_qc(CompBasisState.ONE)
         self.encode(qc)
-        self.check_results_one_result(qc, "111", hadamard_basis=True)
+        self.check_results_one_result(qc, "111", hadamard_qubits=3)
 
     def test_encoding_plus(self):
         # Computational basis
@@ -92,7 +92,7 @@ class TestThreeQubitPhaseFlipEncodingDecoding(ThreeQubitPhaseFlipTest):
         # Hadamard basis
         qc = self.get_initialized_qc(HadBasisState.PLUS)
         self.encode(qc)
-        self.check_results_two_results_50_50(qc, ("000", "111"), hadamard_basis=True)
+        self.check_results_two_results_50_50(qc, ("000", "111"), hadamard_qubits=3)
 
     def test_encoding_decoding_0(self):
         qc = self.get_initialized_qc(CompBasisState.ZERO)
@@ -126,11 +126,11 @@ class TestThreeQubitPhaseFlipSyndromeExtraction(ThreeQubitPhaseFlipTest):
 
     def test_encoding_0_syndrome_hadamard(self):
         for error_index, measurement_outcome in ((None, "00000"), (0, "01001"), (1, "10010"), (2, "11100")):
-            self.do_syndrome_testing(CompBasisState.ZERO, error_index, (measurement_outcome,), hadamard_basis=True)
+            self.do_syndrome_testing(CompBasisState.ZERO, error_index, (measurement_outcome,), hadamard_qubits=3)
 
     def test_encoding_1_syndrome_hadamard(self):
         for error_index, measurement_outcome in ((None, "00111"), (0, "01110"), (1, "10101"), (2, "11011")):
-            self.do_syndrome_testing(CompBasisState.ONE, error_index, (measurement_outcome,), hadamard_basis=True)
+            self.do_syndrome_testing(CompBasisState.ONE, error_index, (measurement_outcome,), hadamard_qubits=3)
 
 
 class TestThreeQubitPhaseFlipErrorCorrection(ThreeQubitPhaseFlipTest):
@@ -142,17 +142,17 @@ class TestThreeQubitPhaseFlipErrorCorrection(ThreeQubitPhaseFlipTest):
     def test_correcting_0_deliberate_error(self):
         for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
             qc = self.get_error_correction_circuit(CompBasisState.ZERO, error_index)
-            self.check_results_one_result(qc, syndrome + "000", syndrome, hadamard_basis=True)
+            self.check_results_one_result(qc, syndrome + "000", syndrome, hadamard_qubits=3)
 
     def test_correcting_1_deliberate_error(self):
         for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
             qc = self.get_error_correction_circuit(CompBasisState.ONE, error_index)
-            self.check_results_one_result(qc, syndrome + "111", syndrome, hadamard_basis=True)
+            self.check_results_one_result(qc, syndrome + "111", syndrome, hadamard_qubits=3)
 
     def test_correcting_plus_deliberate_error(self):
         for error_index, syndrome in self.ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS:
             qc = self.get_error_correction_circuit(HadBasisState.PLUS, error_index)
-            self.check_results_two_results_50_50(qc, (syndrome + "000", syndrome + "111"), (syndrome, syndrome), hadamard_basis=True)
+            self.check_results_two_results_50_50(qc, (syndrome + "000", syndrome + "111"), (syndrome, syndrome), hadamard_qubits=3)
 
 
 class TestRandomThreeQubitPhaseFlipErrorCorrectionAndDecoding(ThreeQubitPhaseFlipTest):

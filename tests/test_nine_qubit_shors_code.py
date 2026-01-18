@@ -56,13 +56,13 @@ class TestNineQubitShorsCodeEncodingDecoding(NineQubitShorsCodeTest):
         qc = self.get_initialized_qc(HadBasisState.PLUS)
         self.encode(qc)
         self.decode(qc)
-        self.check_results_one_result(qc, "000000000", hadamard_basis=True)
+        self.check_results_one_result(qc, "000000000", hadamard_qubits=1)
 
     def test_encoding_decoding_minus(self):
         qc = self.get_initialized_qc(HadBasisState.MINUS)
         self.encode(qc)
         self.decode(qc)
-        self.check_results_one_result(qc, "000000001", hadamard_basis=True)
+        self.check_results_one_result(qc, "000000001", hadamard_qubits=1)
 
     def test_encoding_decoding_random_state_vector(self):
         for _ in range(4):

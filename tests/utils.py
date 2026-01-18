@@ -38,7 +38,7 @@ class QuantumCircuitTest:
 
     @classmethod
     def _check_results_ratio(
-        cls, qc: QuantumCircuit, qreg_results: tuple[str, ...], clreg_results: tuple[str, ...], expected_ratios: tuple[int, ...], *, num_std_devs: float = 4.0, hadamard_basis: bool = False
+        cls, qc: QuantumCircuit, qreg_results: tuple[str, ...], clreg_results: tuple[str, ...], expected_ratios: tuple[int, ...], *, num_std_devs: float = 4.0, hadamard_qubits: int = 0
     ) -> None:
         """
         Generic function to check quantum circuit measurement results against expected ratios.
@@ -53,9 +53,8 @@ class QuantumCircuitTest:
             expected_ratios: Tuple of ints representing the expected ratios (e.g., (1, 1) for 50/50, (1, 1, 1, 1) for even 4-way)
             num_std_devs: Number of standard deviations for tolerance (default 4.0)
         """
-        if hadamard_basis:
-            for qb_index in range(len(qreg_results)):
-                qc.h(qb_index)
+        for qb_index in range(hadamard_qubits):
+            qc.h(qb_index)
         qc.measure_all()
         measurements = cls.simulate_circuit(qc)
 
@@ -79,26 +78,26 @@ class QuantumCircuitTest:
             assert abs(observed_count - expected_count) <= tolerance, f"Result '{result}': expected {expected_count:.0f} ± {tolerance:.0f}, got {observed_count}"
 
     @classmethod
-    def check_results_one_result(cls, qc: QuantumCircuit, qreg_result: str, clreg_result: str = "", *, hadamard_basis: bool = False) -> None:
+    def check_results_one_result(cls, qc: QuantumCircuit, qreg_result: str, clreg_result: str = "", *, hadamard_qubits: int = 0) -> None:
         """
         Given a quantum circuit and a single correct result, measure the circuit, and check the results of the
           measurement match the inputted correct result
         """
-        cls._check_results_ratio(qc, (qreg_result,), (clreg_result,), (1,), hadamard_basis=hadamard_basis)
+        cls._check_results_ratio(qc, (qreg_result,), (clreg_result,), (1,), hadamard_qubits=hadamard_qubits)
 
     @classmethod
     def check_results_two_results_ratio(
-        cls, qc: QuantumCircuit, qreg_results: tuple[str, str], clreg_results: tuple[str, str], expected_ratio: tuple[int, int], *, num_std_devs: float = 4.0, hadamard_basis: bool = False
+        cls, qc: QuantumCircuit, qreg_results: tuple[str, str], clreg_results: tuple[str, str], expected_ratio: tuple[int, int], *, num_std_devs: float = 4.0, hadamard_qubits: int = 0
     ) -> None:
         """
         Given a quantum circuit and two expected results, measure the circuit and check the results
         match the expected ratio within statistical tolerance.
         """
-        cls._check_results_ratio(qc, qreg_results, clreg_results, expected_ratio, num_std_devs=num_std_devs, hadamard_basis=hadamard_basis)
+        cls._check_results_ratio(qc, qreg_results, clreg_results, expected_ratio, num_std_devs=num_std_devs, hadamard_qubits=hadamard_qubits)
 
     @classmethod
     def check_results_n_results_even_chance(
-        cls, qc: QuantumCircuit, qreg_results: tuple[str, ...], clreg_results: tuple[str, ...] | None = None, *, num_std_devs: float = 4.0, hadamard_basis: bool = False
+        cls, qc: QuantumCircuit, qreg_results: tuple[str, ...], clreg_results: tuple[str, ...] | None = None, *, num_std_devs: float = 4.0, hadamard_qubits: int = 0
     ) -> None:
         """
         Given a quantum circuit and n expected results, measure the circuit and check the results
@@ -107,15 +106,15 @@ class QuantumCircuitTest:
         if clreg_results is None:
             clreg_results = tuple("" for _ in qreg_results)
         expected_ratios = tuple(1 for _ in qreg_results)
-        cls._check_results_ratio(qc, qreg_results, clreg_results, expected_ratios, num_std_devs=num_std_devs, hadamard_basis=hadamard_basis)
+        cls._check_results_ratio(qc, qreg_results, clreg_results, expected_ratios, num_std_devs=num_std_devs, hadamard_qubits=hadamard_qubits)
 
     @classmethod
-    def check_results_two_results_50_50(cls, qc: QuantumCircuit, qreg_results: tuple[str, str], clreg_results: tuple[str, str] = ("", ""), hadamard_basis: bool = False) -> None:
+    def check_results_two_results_50_50(cls, qc: QuantumCircuit, qreg_results: tuple[str, str], clreg_results: tuple[str, str] = ("", ""), hadamard_qubits: int = 0) -> None:
         """
         Given a quantum circuit and two expected results, measure the circuit and check the results
         are approximately 50/50 between the two.
         """
-        cls.check_results_two_results_ratio(qc, qreg_results, clreg_results, expected_ratio=(1, 1), hadamard_basis=hadamard_basis)
+        cls.check_results_two_results_ratio(qc, qreg_results, clreg_results, expected_ratio=(1, 1), hadamard_qubits=hadamard_qubits)
 
     @classmethod
     def get_random_state_vector_and_measurement_results(cls) -> tuple[Statevector, int, int]:
