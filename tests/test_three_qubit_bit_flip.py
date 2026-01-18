@@ -2,7 +2,7 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector, random_statevector
 
 from qecc import (
-    apply_three_qubit_syndrome_correction,
+    apply_three_qubit_bit_flip_correction,
     get_three_qubit_bit_flip_encoding_decoding_circuit,
     get_three_qubit_bit_flip_syndrome_extraction_circuit,
 )
@@ -112,7 +112,7 @@ class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtracti
         # Syndrome extraction
         cls.syndrome_extraction(out)
         # Syndrome correction
-        apply_three_qubit_syndrome_correction(out, clreg)
+        apply_three_qubit_bit_flip_correction(out, clreg)
         return out
 
     def test_correcting_0_deliberate_error(self):
@@ -131,7 +131,7 @@ class TestThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipSyndromeExtracti
             self.check_results_two_results_50_50(qc, (syndrome + "000", syndrome + "111"), (syndrome, syndrome))
 
 
-class TestRandomThreeQubitBitFlipErrorCorrection(TestThreeQubitBitFlipErrorCorrection):
+class TestRandomThreeQubitBitFlipErrorCorrectionAndDecoding(TestThreeQubitBitFlipErrorCorrection):
     @classmethod
     def get_random_state_vector_and_measurement_results(cls) -> tuple[Statevector, int, int]:
         # Generate random 1-qubit state vector

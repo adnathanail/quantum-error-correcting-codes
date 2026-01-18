@@ -35,22 +35,10 @@ def get_three_qubit_phase_flip_syndrome_extraction_circuit() -> QuantumCircuit:
     out = QuantumCircuit(5)
     out.h(3)
     out.h(4)
-    out.cx(
-        3,
-        0,
-    )
-    out.cx(
-        4,
-        1,
-    )
-    out.cx(
-        3,
-        2,
-    )
-    out.cx(
-        4,
-        2,
-    )
+    out.cx(3, 0)
+    out.cx(4, 1)
+    out.cx(3, 2)
+    out.cx(4, 2)
     out.h(3)
     out.h(4)
     return out

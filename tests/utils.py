@@ -75,7 +75,7 @@ class QuantumCircuitTest:
         correct_results_little_endian = [qreg_results[i] + " " + clreg_results[i] for i in range(len(qreg_results))]
 
         # Check we only have the expected results
-        assert set(measurements.keys()) == set(correct_results_little_endian)
+        assert set(measurements.keys()) == set(correct_results_little_endian), f"Measurements : {measurements}"
 
         total_shots = sum(measurements.values())
         ratio_sum = sum(expected_ratios)
@@ -129,3 +129,7 @@ class QuantumCircuitTest:
         are approximately 50/50 between the two.
         """
         cls.check_results_two_results_ratio(qc, qreg_results, clreg_results, expected_ratio=(1, 1))
+
+
+class ThreeQubitEncodingQuantumCircuitTest(QuantumCircuitTest):
+    ERROR_INDEXES_AND_SYNDROME_MEASUREMENTS: tuple[tuple[int | None, str], ...] = ((None, "00"), (0, "01"), (1, "10"), (2, "11"))
