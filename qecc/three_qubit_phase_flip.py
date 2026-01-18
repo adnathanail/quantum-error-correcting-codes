@@ -10,3 +10,11 @@ def get_three_qubit_phase_flip_encoding() -> QuantumCircuit:
     out.cx(0, 1)
     out.cx(0, 2)
     return out
+
+
+def get_three_qubit_phase_flip_decoding() -> QuantumCircuit:
+    out = QuantumCircuit(3)
+    out.cx(0, 1)
+    out.cx(0, 2)
+    out.h(0)
+    return out
