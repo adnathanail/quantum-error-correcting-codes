@@ -1,3 +1,5 @@
+import random
+
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
@@ -249,3 +251,28 @@ class TestNineQubitShorsCodeCompleteErrorCorrection(NineQubitShorsCodeTest):
 
     def test_correcting_1_deliberate_error(self):
         self.do_error_correction_testing(CompBasisState.ONE, "000000001")
+
+
+class TestRandomNineQubitShorsCodeCompleteErrorCorrection(NineQubitShorsCodeTest):
+    """
+    Tests applying random X and Z errors to random state vectors, and making sure the correction works properly
+    """
+
+    def test_random_state_vector_correction(self):
+        for _ in range(10):
+            vec, prob_zero, prob_one = self.get_random_state_vector_and_exact_probabilities()
+            bit_flip_error_index = random.randint(0, 8)
+            phase_flip_error_index = random.randint(0, 8)
+
+            bit_flip_syndrome = self.BIT_FLIP_SYNDROMES[bit_flip_error_index]
+            phase_flip_syndrome = self.PHASE_FLIP_SYNDROMES[phase_flip_error_index // 3]
+
+            qc = self.get_complete_error_correction_circuit(vec, bit_flip_error_index, phase_flip_error_index)
+
+            self.check_results_two_results_ratio(
+                qc,
+                (f"{phase_flip_syndrome}{bit_flip_syndrome}000000000", f"{phase_flip_syndrome}{bit_flip_syndrome}000000001"),
+                (f"{phase_flip_syndrome} {bit_flip_syndrome}", f"{phase_flip_syndrome} {bit_flip_syndrome}"),
+                (prob_zero, prob_one),
+                num_shots=100,
+            )
