@@ -1,3 +1,7 @@
+"""
+Reference https://stem.mitre.org/quantum/error-correction-codes/steane-ecc.html
+"""
+
 from qiskit import QuantumCircuit, QuantumRegister
 
 

@@ -135,14 +135,20 @@ class QuantumCircuitTest:
         cls.check_results_two_results_ratio(qc, qreg_results, clreg_results, expected_ratio=(1, 1), hadamard_qubits=hadamard_qubits)
 
     @staticmethod
-    def get_random_state_vector_and_exact_probabilities() -> tuple[Statevector, int, int]:
+    def get_random_state_vector_and_exact_probabilities(min_probability: float = 0.1) -> tuple[Statevector, int, int]:
         """
         Generate a random 1-qubit state vector and return exact probabilities as integers.
         Returns (statevector, prob_zero_scaled, prob_one_scaled) where probabilities are
         scaled to integers (multiplied by 10000) for use with ratio-based testing.
+
+        Filters out extreme states where either probability is below min_probability,
+        to ensure both outcomes are reliably observed with limited shot counts.
         """
-        vec = random_statevector(2)
-        probs = vec.probabilities()
+        while True:
+            vec = random_statevector(2)
+            probs = vec.probabilities()
+            if probs[0] >= min_probability and probs[1] >= min_probability:
+                break
         # Scale to integers for ratio testing (10000 gives good precision)
         return vec, int(probs[0] * 10000), int(probs[1] * 10000)
 
