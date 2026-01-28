@@ -1,3 +1,5 @@
+import random
+
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
@@ -155,7 +157,7 @@ class TestSevenQubitSteaneCodeSyndromeExtraction(SevenQubitSteaneCodeTest):
         self.do_syndrome_z_error_test(CompBasisState.ONE, self.STEANE_CODE_ONE_STATES)
 
 
-class TestSevenQubitShorsCodeCompleteErrorCorrection(SevenQubitSteaneCodeTest):
+class TestSevenQubitSteaneCodeErrorCorrection(SevenQubitSteaneCodeTest):
     """
     Tests applying each possible X and Z error, and making sure the correction works properly,
       on |0>, and |1> states
@@ -179,3 +181,26 @@ class TestSevenQubitShorsCodeCompleteErrorCorrection(SevenQubitSteaneCodeTest):
 
     def test_correcting_minus_deliberate_error(self):
         self.do_error_correction_testing(HadBasisState.MINUS, "0000001", hadamard_qubits=1)
+
+
+class TestRandomSevenQubitSteaneCodeErrorCorrection(SevenQubitSteaneCodeTest):
+    """
+    Tests applying random X and Z errors to random state vectors, and making sure the correction works properly
+    """
+
+    def test_random_state_vector_correction(self):
+        for _ in range(10):
+            vec, prob_zero, prob_one = self.get_random_state_vector_and_exact_probabilities()
+            bit_flip_error_index, phase_flip_error_index = random.randint(0, 6), random.randint(0, 6)
+
+            bit_flip_syndrome, phase_flip_syndrome = self.SYNDROMES[bit_flip_error_index], self.SYNDROMES[phase_flip_error_index]
+
+            qc = self.get_error_correction_circuit(vec, bit_flip_error_index, phase_flip_error_index)
+
+            self.check_results_two_results_ratio(
+                qc,
+                (f"{phase_flip_syndrome}{bit_flip_syndrome}0000000", f"{phase_flip_syndrome}{bit_flip_syndrome}0000001"),
+                (f"{phase_flip_syndrome} {bit_flip_syndrome}", f"{phase_flip_syndrome} {bit_flip_syndrome}"),
+                (prob_zero, prob_one),
+                num_shots=100,
+            )
