@@ -28,3 +28,7 @@ def get_seven_qubit_steane_code_encoding_circuit() -> QuantumCircuit:
     out.cx(4, 2)
     out.cx(4, 1)
     return out
+
+
+def get_seven_qubit_steane_code_decoding_circuit() -> QuantumCircuit:
+    return get_seven_qubit_steane_code_encoding_circuit().inverse()
