@@ -56,3 +56,39 @@ def get_seven_qubit_steane_code_syndrome_extraction_circuit() -> QuantumCircuit:
     for i in range(3):
         out.h(phase_flip_syndrome[i])
     return out
+
+
+def apply_seven_qubit_steane_code_correction(qc: QuantumCircuit) -> None:
+    bit_flip_syndrome_measurement, phase_flip_syndrome_measurement = qc.cregs
+    qc.measure(qc.qubits[7:10], bit_flip_syndrome_measurement)
+    qc.measure(qc.qubits[10:13], phase_flip_syndrome_measurement)
+    # Bit-flip correction
+    with qc.if_test((bit_flip_syndrome_measurement, 0b001)):
+        qc.x(0)
+    with qc.if_test((bit_flip_syndrome_measurement, 0b010)):
+        qc.x(1)
+    with qc.if_test((bit_flip_syndrome_measurement, 0b011)):
+        qc.x(2)
+    with qc.if_test((bit_flip_syndrome_measurement, 0b100)):
+        qc.x(3)
+    with qc.if_test((bit_flip_syndrome_measurement, 0b101)):
+        qc.x(4)
+    with qc.if_test((bit_flip_syndrome_measurement, 0b110)):
+        qc.x(5)
+    with qc.if_test((bit_flip_syndrome_measurement, 0b111)):
+        qc.x(6)
+    # Phase-flip correction
+    with qc.if_test((phase_flip_syndrome_measurement, 0b001)):
+        qc.z(0)
+    with qc.if_test((phase_flip_syndrome_measurement, 0b010)):
+        qc.z(1)
+    with qc.if_test((phase_flip_syndrome_measurement, 0b011)):
+        qc.z(2)
+    with qc.if_test((phase_flip_syndrome_measurement, 0b100)):
+        qc.z(3)
+    with qc.if_test((phase_flip_syndrome_measurement, 0b101)):
+        qc.z(4)
+    with qc.if_test((phase_flip_syndrome_measurement, 0b110)):
+        qc.z(5)
+    with qc.if_test((phase_flip_syndrome_measurement, 0b111)):
+        qc.z(6)
