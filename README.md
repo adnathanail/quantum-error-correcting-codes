@@ -6,6 +6,8 @@
 [![prek](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json)](https://github.com/j178/prek)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 
+_I have used Claude code to assist with boilerplate, some aspects of writing automated tests, and debugging. All circuits have been implemented by hand._
+
 Install dependencies (including dev)
 ```shell
 uv sync

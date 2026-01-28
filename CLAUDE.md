@@ -30,11 +30,13 @@ Each error-correcting code has:
 | 3-qubit bit flip | X errors | \|0⟩→\|000⟩, \|1⟩→\|111⟩ | X |
 | 3-qubit phase flip | Z errors | \|0⟩→\|+++⟩, \|1⟩→\|---⟩ | Z |
 | 9-qubit Shor's code | X and Z errors | \|0⟩→(∣000⟩+∣111⟩)⊗3, \|1⟩→(∣000⟩-∣111⟩)⊗3 | X and Z |
+| 7-qubit Steane code | X and Z errors | \|0⟩→superposition of 8 codewords, \|1⟩→superposition of 8 codewords | X and Z |
 
 **Implementation notes:**
 - Bit flip encoding/decoding uses the same circuit (CNOTs are self-inverse)
 - Phase flip needs separate encode/decode circuits (involves Hadamards)
 - Shor's code combines both: applies phase flip encoding to create 3 blocks, then bit flip encoding within each block. Has separate syndrome extraction and correction for bit flips (6 ancilla qubits) and phase flips (2 ancilla qubits).
+- Steane code uses 7 data qubits + 3 ancilla for bit-flip syndrome + 3 ancilla for phase-flip syndrome. Decoding circuit is the inverse of encoding. Syndrome values 001-111 map directly to qubit indices 0-6.
 
 ### Tests (`tests/`)
 
@@ -42,9 +44,11 @@ Each error-correcting code has:
 - `QuantumCircuitTest` - base class with measurement helpers
 - `ThreeQubitEncodingQuantumCircuitTest` - adds syndrome constants for 3-qubit codes
 - `NineQubitEncodingQuantumCircuitTest` - base class for 9-qubit Shor's code tests
+- `SevenQubitEncodingQuantumCircuitTest` - base class for 7-qubit Steane code tests
 - `_check_results_ratio()` - generic measurement verification with statistical tolerance
-- `get_random_state_vector_and_exact_probabilities()` - generates random states with exact probabilities for ratio testing
+- `get_random_state_vector_and_exact_probabilities()` - generates random states with exact probabilities for ratio testing; filters out extreme states (both probabilities must be ≥10% by default) to ensure reliable observation with limited shots
 - `hadamard_qubits` parameter - applies H gates before measurement (useful for phase flip code verification)
+- `flip_bit_at_index()` - helper to flip a specific bit in a measurement string (used for syndrome testing)
 
 ## Qiskit Notes
 
