@@ -169,3 +169,12 @@ class SevenQubitEncodingQuantumCircuitTest(QuantumCircuitTest):
 
 def combs_of_strings(*strings: tuple[str, ...]):
     return ["".join(comb) for comb in itertools.product(*strings)]
+
+
+def flip(b: str) -> str:
+    return "0" if b == "1" else "1"
+
+
+def flip_bit_at_index(bits: str, flip_index: int) -> str:
+    bits_len = len(bits)
+    return bits[: bits_len - flip_index - 1] + flip(bits[bits_len - flip_index - 1]) + bits[bits_len - flip_index :]
