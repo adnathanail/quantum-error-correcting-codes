@@ -10,7 +10,7 @@ from qecc.nine_qubit_shors_code import (
     get_nine_qubit_shors_code_encoding_circuit,
     get_nine_qubit_shors_code_phase_flip_syndrome_extraction_circuit,
 )
-from qecc.seven_qubit_steane_code import get_seven_qubit_steane_code_encoding_circuit, get_seven_qubit_steane_code_syndrome_extraction_circuit
+from qecc.seven_qubit_steane_code import apply_seven_qubit_steane_code_correction, get_seven_qubit_steane_code_encoding_circuit, get_seven_qubit_steane_code_syndrome_extraction_circuit
 from qecc.three_qubit_bit_flip import apply_three_qubit_bit_flip_correction, get_three_qubit_bit_flip_encoding_decoding_circuit, get_three_qubit_bit_flip_syndrome_extraction_circuit
 from qecc.three_qubit_phase_flip import apply_three_qubit_phase_flip_correction, get_three_qubit_phase_flip_syndrome_extraction_circuit
 
@@ -146,6 +146,23 @@ def seven_qubit_steane_code() -> None:
         inplace=True,
     )
     draw_circuit(qc, out_dir / "syndrome_extraction.png")
+
+    # Error correction
+    qc = QuantumCircuit(QuantumRegister(7 + 3 + 3), ClassicalRegister(3), ClassicalRegister(3))
+    qc.compose(
+        get_seven_qubit_steane_code_encoding_circuit(),
+        qubits=qc.qubits[:7],
+        inplace=True,
+    )
+    qc.barrier()
+    qc.compose(
+        get_seven_qubit_steane_code_syndrome_extraction_circuit(),
+        qubits=qc.qubits[:13],
+        inplace=True,
+    )
+    qc.barrier()
+    apply_seven_qubit_steane_code_correction(qc)
+    draw_circuit(qc, out_dir / "error_correction.png")
 
 
 if __name__ == "__main__":
