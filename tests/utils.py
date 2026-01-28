@@ -161,5 +161,11 @@ class NineQubitEncodingQuantumCircuitTest(QuantumCircuitTest):
         return QuantumCircuitTest.get_initialized_qc(state_to_initialize, num_qubits=num_qubits, clreg_sizes=clreg_sizes)
 
 
+class SevenQubitEncodingQuantumCircuitTest(QuantumCircuitTest):
+    @staticmethod
+    def get_initialized_qc(state_to_initialize: Statevector, *, num_qubits: int = 7, clreg_sizes: tuple[int, ...] = (0,)) -> QuantumCircuit:
+        return QuantumCircuitTest.get_initialized_qc(state_to_initialize, num_qubits=num_qubits, clreg_sizes=clreg_sizes)
+
+
 def combs_of_strings(*strings: tuple[str, ...]):
     return ["".join(comb) for comb in itertools.product(*strings)]

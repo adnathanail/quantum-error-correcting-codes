@@ -10,10 +10,17 @@ from qecc.nine_qubit_shors_code import (
     get_nine_qubit_shors_code_encoding_circuit,
     get_nine_qubit_shors_code_phase_flip_syndrome_extraction_circuit,
 )
+from qecc.seven_qubit_steane_code import get_seven_qubit_steane_code_encoding_circuit
 from qecc.three_qubit_bit_flip import apply_three_qubit_bit_flip_correction, get_three_qubit_bit_flip_encoding_decoding_circuit, get_three_qubit_bit_flip_syndrome_extraction_circuit
 from qecc.three_qubit_phase_flip import apply_three_qubit_phase_flip_correction, get_three_qubit_phase_flip_syndrome_extraction_circuit
 
 imgs_dir = Path(__file__).parent.parent / "imgs"
+
+
+def check_out_dir(out_dir_path: Path) -> Path:
+    if not out_dir_path.exists():
+        out_dir_path.mkdir()
+    return out_dir_path
 
 
 def draw_circuit(circuit: QuantumCircuit, file_path: Path) -> None:
@@ -21,7 +28,7 @@ def draw_circuit(circuit: QuantumCircuit, file_path: Path) -> None:
 
 
 def three_qubit_bit_flip() -> None:
-    out_dir = imgs_dir / "three_qubit_bit_flip"
+    out_dir = check_out_dir(imgs_dir / "three_qubit_bit_flip")
     # Encoding
     draw_circuit(get_three_qubit_bit_flip_encoding_decoding_circuit(), out_dir / "encoding.png")
 
@@ -43,7 +50,7 @@ def three_qubit_bit_flip() -> None:
 
 
 def three_qubit_phase_flip() -> None:
-    out_dir = imgs_dir / "three_qubit_phase_flip"
+    out_dir = check_out_dir(imgs_dir / "three_qubit_phase_flip")
     # Encoding
     draw_circuit(get_three_qubit_phase_flip_encoding_circuit(), out_dir / "encoding.png")
 
@@ -65,7 +72,7 @@ def three_qubit_phase_flip() -> None:
 
 
 def nine_qubit_shors_code() -> None:
-    out_dir = imgs_dir / "nine_qubit_shors_code"
+    out_dir = check_out_dir(imgs_dir / "nine_qubit_shors_code")
     # Encoding
     draw_circuit(get_nine_qubit_shors_code_encoding_circuit(), out_dir / "encoding.png")
 
@@ -116,7 +123,14 @@ def nine_qubit_shors_code() -> None:
     draw_circuit(qc, out_dir / "error_correction.png")
 
 
+def seven_qubit_steane_code() -> None:
+    out_dir = check_out_dir(imgs_dir / "seven_qubit_steane_code")
+    # Encoding
+    draw_circuit(get_seven_qubit_steane_code_encoding_circuit(), out_dir / "encoding.png")
+
+
 if __name__ == "__main__":
     three_qubit_bit_flip()
     three_qubit_phase_flip()
     nine_qubit_shors_code()
+    seven_qubit_steane_code()
