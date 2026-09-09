@@ -1,6 +1,9 @@
 """
 Encode a logical qubit with the 9-qubit Shor's code, inject a deliberate X and/or Z error, run
-syndrome extraction + correction + decoding, and check the result on the Aer statevector simulator.
+syndrome extraction + correction + decoding, and check the result on the Fermioniq local backend.
+
+Requires the Fermioniq local dev server to be running (`uv run python local_server/server.py`
+in the Emulator repo) before this script is run.
 """
 
 import argparse
@@ -9,8 +12,8 @@ from math import sqrt
 
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 from qiskit.quantum_info import Statevector, random_statevector
-from qiskit_aer import AerSimulator
 
+from qecc.fermioniq_local_backend import FermioniqLocalBackend
 from qecc.nine_qubit_shors_code import (
     apply_nine_qubit_shors_code_bit_flip_correction,
     apply_nine_qubit_shors_code_phase_flip_correction,
@@ -18,8 +21,6 @@ from qecc.nine_qubit_shors_code import (
     get_nine_qubit_shors_code_encoding_circuit,
     get_nine_qubit_shors_code_syndrome_extraction_circuit,
 )
-
-simulator = AerSimulator(method="statevector")
 
 STATES = {
     "0": Statevector([1, 0]),
@@ -84,8 +85,9 @@ def main() -> None:
     parser.add_argument("--state", choices=("0", "1", "+", "-", "random"), default="random", help="Logical qubit state to encode")
     parser.add_argument("--bit-flip-error", default="random", help="Qubit index (0-8) to apply a deliberate X error to, 'random', or 'none'")
     parser.add_argument("--phase-flip-error", default="random", help="Qubit index (0-8) to apply a deliberate Z error to, 'random', or 'none'")
-    parser.add_argument("--shots", type=int, default=200, help="Number of shots to run on the statevector simulator")
+    parser.add_argument("--shots", type=int, default=200, help="Number of shots to run on the backend")
     parser.add_argument("--seed", type=int, default=None, help="Random seed, for reproducible runs")
+    parser.add_argument("--fermioniq-url", default="http://127.0.0.1:8787", help="URL of the running Fermioniq local dev server")
     args = parser.parse_args()
 
     if args.seed is not None:
@@ -101,7 +103,8 @@ def main() -> None:
 
     qc = build_circuit(initial_state, bit_flip_error_index, phase_flip_error_index)
 
-    result = simulator.run(qc, shots=args.shots).result()
+    backend = FermioniqLocalBackend(url=args.fermioniq_url)
+    result = backend.run(qc, shots=args.shots).result()
     counts = result.get_counts()
 
     print(f"\nRan {args.shots} shots on {simulator.__class__.__name__}(method='statevector')")
