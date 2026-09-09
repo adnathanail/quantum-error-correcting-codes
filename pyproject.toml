@@ -9,6 +9,7 @@ description = "Implementing various quantum error-correcting codes in Qiskit, ju
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "colorama>=0.4.6",
     "qiskit>=2.3.0",
 ]
 
