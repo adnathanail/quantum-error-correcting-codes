@@ -15,7 +15,6 @@ from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 from qiskit.quantum_info import Statevector, random_statevector
 from qiskit_aer import AerSimulator
 
-from qecc.fermioniq_local_backend import FermioniqLocalBackend
 from qecc.nine_qubit_shors_code import (
     apply_nine_qubit_shors_code_bit_flip_correction,
     apply_nine_qubit_shors_code_phase_flip_correction,
@@ -23,7 +22,8 @@ from qecc.nine_qubit_shors_code import (
     get_nine_qubit_shors_code_encoding_circuit,
     get_nine_qubit_shors_code_syndrome_extraction_circuit,
 )
-from colorama import Fore
+from qecc.utils.fermioniq_local_backend import FermioniqLocalBackend
+from qecc.utils.logging import print_blue
 
 STATES = {
     "0": Statevector([1, 0]),
@@ -124,7 +124,7 @@ def main() -> None:
     parser.add_argument("--fermioniq-url", default="http://127.0.0.1:8787", help="URL of the running Fermioniq local dev server (only used with --backend fermioniq)")
     args = parser.parse_args()
 
-    print(Fore.BLUE + "Running on " + ("AER state vector simulator" if args.backend == "aer" else "Fermioniq Ava") + Fore.RESET)
+    print_blue("Running on " + ("AER state vector simulator" if args.backend == "aer" else "Fermioniq Ava"))
     print()
 
     if args.seed is not None:
