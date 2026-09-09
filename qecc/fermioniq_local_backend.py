@@ -8,7 +8,7 @@ Copy this single file into your other project. It only depends on
 
 Example
 -------
-    from qiskit import QuantumCircuit
+    from qiskit import ClassicalRegister, QuantumCircuit
     from fermioniq_local_backend import FermioniqLocalBackend
 
     backend = FermioniqLocalBackend()  # defaults to http://127.0.0.1:8787
@@ -37,6 +37,20 @@ Example
 
     # Or let effort (0-1) pick the bond dimension the normal way:
     job = backend.run(qc, shots=1000, effort=0.05)
+
+    # Mid-circuit measurement + classical control (`if_test`) works too --
+    # no special handling needed on this side. Only single-branch if_test
+    # (no `else`) with plain gates in the body is supported; unsupported
+    # circuits raise a RuntimeError from job.submit() with the server's
+    # explanation.
+    qc_dyn = QuantumCircuit(2)
+    qc_dyn.h(0)
+    creg = ClassicalRegister(1, "creg")
+    qc_dyn.add_register(creg)
+    qc_dyn.measure(0, creg[0])
+    with qc_dyn.if_test((creg, 1)):
+        qc_dyn.x(1)
+    job = backend.run(qc_dyn, shots=1000)
 """
 
 import base64
@@ -49,6 +63,7 @@ import uuid
 
 from qiskit import qpy, transpile
 from qiskit.circuit import Measure, Parameter, Reset
+from qiskit.circuit.controlflow import IfElseOp
 from qiskit.circuit.library import (
     CHGate,
     CRXGate,
@@ -248,6 +263,12 @@ class FermioniqLocalBackend(BackendV2):
         target = Target(num_qubits=max_qubits)
         for gate in _SUPPORTED_GATES:
             target.add_instruction(gate, None)
+        # Declaring if_else support here just keeps transpile() from
+        # rejecting/decomposing it -- the actual emulator support lives in
+        # QCShared's qiskit serializer (single-branch if_test only, no
+        # else/nested control-flow/measure/reset inside the block; see
+        # qcshared/serializers/qiskit_serializer.py:_if_else_op_to_gate_dict_list).
+        target.add_instruction(IfElseOp, name="if_else")
         self._target = target
 
     @property
