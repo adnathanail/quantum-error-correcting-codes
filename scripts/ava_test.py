@@ -1,18 +1,19 @@
 import json
+from pathlib import Path
 
 import fermioniq
 import rich
 from fermioniq.client import Client
 from qiskit import QuantumCircuit
 
-with open("token-alex.json") as f:
+with Path("token-alex.json").open() as f:
     access_tokens = json.load(f)
 
 print(access_tokens)
 client = Client(access_token_id=access_tokens["access_token_id"], access_token_secret=access_tokens["access_token_secret"])
 
 
-def qiskit_bell_pair():
+def qiskit_bell_pair() -> QuantumCircuit:
     circuit = QuantumCircuit(2)
     circuit.h(0)
     circuit.cx(0, 1)
@@ -21,7 +22,7 @@ def qiskit_bell_pair():
 
 circuit = qiskit_bell_pair()
 
-emulator_job = fermioniq.EmulatorJob(circuit=circuit)
+emulator_job = fermioniq.EmulatorJob(circuit=circuit)  # ty:ignore[invalid-argument-type]
 result = client.schedule_and_wait(emulator_job)
 
 rich.print(result)

@@ -64,3 +64,7 @@ combine-as-imports = true
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["ANN201"]
+
+[tool.ty.src]
+# Remove `build` from the excluded directories.
+exclude = ["qecc/utils/fermioniq_local_backend.py"]

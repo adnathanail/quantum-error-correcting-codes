@@ -11,6 +11,7 @@ import argparse
 import json
 import random
 from math import sqrt
+from pathlib import Path
 
 import fermioniq
 import rich
@@ -145,13 +146,13 @@ def main() -> None:
     qc = build_circuit(initial_state, bit_flip_error_index, phase_flip_error_index)
 
     if args.backend == "ava":
-        with open("token-alex.json") as f:
+        with Path("token-alex.json").open() as f:
             access_tokens = json.load(f)
         print(access_tokens)
         client = Client(access_token_id=access_tokens["access_token_id"], access_token_secret=access_tokens["access_token_secret"])
         client.configure_notifications(email_address="alex@fermioniq.com", slack_id="U0BTN4KACCB")
         backend = None
-        emulator_job = fermioniq.EmulatorJob(circuit=qc)
+        emulator_job = fermioniq.EmulatorJob(circuit=qc)  # ty:ignore[invalid-argument-type]
         result = client.schedule_and_wait(emulator_job)
         rich.print(result)
         rich.print(result.job_metadata)
