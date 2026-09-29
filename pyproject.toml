@@ -10,8 +10,13 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "colorama>=0.4.6",
+    "fermioniq",
     "qiskit>=2.3.0",
 ]
+
+[tool.uv.sources]
+fermioniq = { path = "/Users/adnathanail/Documents/Fermioniq/Emulator/Client", editable = true }
+fermioniq-qc = { path = "/Users/adnathanail/Documents/Fermioniq/Emulator/QCShared", editable = true }
 
 [dependency-groups]
 dev = [
@@ -26,6 +31,7 @@ dev = [
 [tool.ruff]
 target-version = "py313"
 line-length = 200
+extend-exclude = ["qecc/utils/fermioniq_local_backend.py"]
 
 [tool.ruff.lint]
 select = [

@@ -8,9 +8,13 @@ Running against Fermioniq requires its local dev server to be running
 """
 
 import argparse
+import json
 import random
 from math import sqrt
 
+import fermioniq
+import rich
+from fermioniq.client import Client
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 from qiskit.quantum_info import Statevector, random_statevector
 from qiskit_aer import AerSimulator
@@ -120,11 +124,11 @@ def main() -> None:
     parser.add_argument("--phase-flip-error", default="random", help="Qubit index (0-8) to apply a deliberate Z error to, 'random', or 'none'")
     parser.add_argument("--shots", type=int, default=200, help="Number of shots to run on the backend")
     parser.add_argument("--seed", type=int, default=None, help="Random seed, for reproducible runs")
-    parser.add_argument("--backend", choices=("aer", "fermioniq"), default="fermioniq", help="Which backend to run the circuit on")
+    parser.add_argument("--backend", choices=("aer", "ava-local", "ava"), default="fermioniq", help="Which backend to run the circuit on")
     parser.add_argument("--fermioniq-url", default="http://127.0.0.1:8787", help="URL of the running Fermioniq local dev server (only used with --backend fermioniq)")
     args = parser.parse_args()
 
-    print_blue("Running on " + ("AER state vector simulator" if args.backend == "aer" else "Fermioniq Ava"))
+    print_blue("Running on " + ("AER state vector simulator" if args.backend == "aer" else "Ava (local)" if args.backend == "ava-local" else "Ava (prod)"))
     print()
 
     if args.seed is not None:
@@ -140,7 +144,22 @@ def main() -> None:
 
     qc = build_circuit(initial_state, bit_flip_error_index, phase_flip_error_index)
 
-    backend = AerSimulator(method="statevector") if args.backend == "aer" else FermioniqLocalBackend(url=args.fermioniq_url)
+    if args.backend == "ava":
+        with open("token-alex.json") as f:
+            access_tokens = json.load(f)
+        print(access_tokens)
+        client = Client(access_token_id=access_tokens["access_token_id"], access_token_secret=access_tokens["access_token_secret"])
+        client.configure_notifications(email_address="alex@fermioniq.com", slack_id="U0BTN4KACCB")
+        backend = None
+        emulator_job = fermioniq.EmulatorJob(circuit=qc)
+        result = client.schedule_and_wait(emulator_job)
+        rich.print(result)
+        rich.print(result.job_metadata)
+        return
+    elif args.backend == "ava-local":
+        backend = FermioniqLocalBackend(url=args.fermioniq_url)
+    else:
+        backend = AerSimulator(method="statevector")
     raw_counts = backend.run(qc, shots=args.shots).result().get_counts()
 
     # AerSimulator (and Qiskit backends generally) already report counts as a space-separated
